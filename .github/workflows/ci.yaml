@@ -1,0 +1,57 @@
+name: CI
+
+on: [ push, pull_request ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install dependencies
+        run: uv pip install -e '.[dev,test]' --system
+
+      - name: Check code
+        run: make code.check
+
+      - name: Test Docker Compose setup
+        run: |
+          export APP_ENV=local
+          python config/toml_config_manager.py
+          cd config/local
+          echo "Generated .env.local content:"
+          cat .env.local
+          export COMPOSE_ENV_FILES=.env.local
+          docker compose up -d --build
+
+      - name: Verify Application Health
+        run: |
+          timeout 10s bash -c '
+            while ! curl -sf http://0.0.0.0:9999/api/v1/; do
+              sleep 1
+            done
+          '
+
+      - name: Test Signup Handler
+        run: |
+          timeout 10s bash -c "
+            while ! curl -sf -X POST \
+              'http://0.0.0.0:9999/api/v1/account/signup' \
+              -H 'accept: application/json' \
+              -H 'Content-Type: application/json' \
+              -d '{
+              \"username\": \"string\",
+              \"password\": \"string\"
+            }'; do
+              sleep 1
+            done
+          "
