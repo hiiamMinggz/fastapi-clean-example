@@ -21,4 +21,4 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 COPY --from=builder --chown=${APP_UID}:${APP_GID} /app/ ./
 USER appuser
 EXPOSE 8888
-CMD ["uvicorn", "app.run:make_app", "--host", "0.0.0.0", "--port", "8888", "--loop", "uvloop"]
+CMD ["uvicorn", "app.run:make_app", "--host", "0.0.0.0", "--port", "8888", "--loop", "uvloop", "--reload"]

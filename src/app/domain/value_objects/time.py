@@ -51,3 +51,13 @@ class AcceptedAt(Time):
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
         super(AcceptedAt, self).__post_init__()
+        
+@dataclass(frozen=True, slots=True, repr=False)
+class UpdatedAt(Time):
+    """raises DomainFieldError"""
+
+    value: datetime
+
+    def __post_init__(self) -> None:
+        """:raises DomainFieldError:"""
+        super(UpdatedAt, self).__post_init__()

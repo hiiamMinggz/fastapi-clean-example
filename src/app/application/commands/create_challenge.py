@@ -8,7 +8,6 @@ from app.application.common.ports.flusher import Flusher
 from app.application.common.ports.transaction_manager import (
     TransactionManager,
 )
-from app.application.common.ports.challenge_command_gateway import UserCommandGateway
 from app.application.common.ports.challenge_command_gateway import ChallengeCommandGateway
 
 from app.application.common.services.current_user import CurrentUserService
@@ -17,7 +16,7 @@ from app.domain.enums.challenge_status import Status
 from app.domain.exceptions.user import UsernameAlreadyExistsError
 from app.domain.services.challenge import ChallengeService
 from app.domain.value_objects.text import Title, Description
-from app.domain.value_objects.id import ViewerId, StreamerId
+from app.domain.value_objects.id import UserId
 from app.domain.value_objects.token import ChallengeAmount, StreamerChallengeFixedAmount
 from app.domain.value_objects.time import CreatedAt, ExpiresAt, AcceptedAt
 
@@ -31,12 +30,7 @@ class CreateChallengeRequest:
     created_by: str
     assigned_to: str
     amount: str
-    fee: Fee
-    streamer_fixed_amount: str
-    status: Status
-    created_at: datetime
     expires_at: datetime
-    accepted_at: datetime
 
 
 class CreateChallengeResponse(TypedDict):
@@ -44,11 +38,11 @@ class CreateChallengeResponse(TypedDict):
 
 
 
-class CreateUserInteractor:
+class CreateChallengeInteractor:
     """
-    - Open to admins.
-    - Creates a new user, including admins, if the username is unique.
-    - Only super admins can create new admins.
+    - Creates a new challenge with the specified parameters
+    - Validates all challenge parameters through domain entities
+    - Persists the new challenge in the database
     """
 
     def __init__(
@@ -67,36 +61,27 @@ class CreateUserInteractor:
 
     async def execute(self, request_data: CreateChallengeRequest) -> CreateChallengeResponse:
         """
-        :raises AuthenticationError:
-        :raises DataMapperError:
-        :raises AuthorizationError:
-        :raises DomainFieldError:
-        :raises RoleAssignmentNotPermittedError:
-        :raises UsernameAlreadyExistsError:
+        :raises AuthenticationError: If the current user is not authenticated
+        :raises DataMapperError: If there's an error persisting the challenge
+        :raises AuthorizationError: If the user is not authorized to create challenges
+        :raises DomainFieldError: If any of the challenge fields are invalid
+        :raises DomainError: If challenge business rules are violated
         """
         log.info("Create challenge: started.")
 
-        # current_user = await self._current_challenge_service.get_current_user()
-
-        # authorize(
-        #     CanManageRole(),
-        #     context=RoleManagementContext(
-        #         subject=current_user,
-        #         target_role=request_data.role,
-        #     ),
-        # )
+        now = datetime.now(tz='UTC')
 
         title = Title(request_data.title)
         description = Description(request_data.description)
-        created_by = ViewerId(request_data.created_by)
-        assigned_to = StreamerId(request_data.assigned_to)
+        created_by = UserId(request_data.created_by)
+        assigned_to = UserId(request_data.assigned_to)
         amount = ChallengeAmount(Decimal(request_data.amount))
-        fee = Fee(request_data.fee)
-        streamer_fixed_amount = StreamerChallengeFixedAmount(Decimal(request_data.streamer_fixed_amount))
-        status = Status(request_data.status)
-        created_at = CreatedAt(request_data.created_at)
+        fee = Fee.CHALLENGE_FEE
+        # TODO: Set streamer fixed amount
+        streamer_fixed_amount = StreamerChallengeFixedAmount()
+        status = Status.PENDING  # Always PENDING when created
+        created_at = now
         expires_at = ExpiresAt(request_data.expires_at)
-        accepted_at = AcceptedAt(request_data.accepted_at)
 
         challenge = self._challenge_service.create_challenge(
             title=title,
@@ -109,15 +94,12 @@ class CreateUserInteractor:
             status=status,
             created_at=created_at,
             expires_at=expires_at,
-            accepted_at=accepted_at,
+            accepted_at=None,
         )
 
         self._challenge_command_gateway.add(challenge)
 
-        try:
-            await self._flusher.flush()
-        except UsernameAlreadyExistsError:
-            raise
+        await self._flusher.flush()
 
         await self._transaction_manager.commit()
 

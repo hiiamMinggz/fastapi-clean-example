@@ -3,7 +3,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.application.common.ports.user_command_gateway import UserCommandGateway
 from app.domain.entities.user import User
-from app.domain.value_objects.id import ViewerId
+from app.domain.value_objects.id import UserId
 from app.domain.value_objects.username import Username
 from app.infrastructure.adapters.constants import DB_QUERY_FAILED
 from app.infrastructure.adapters.types import MainAsyncSession
@@ -22,7 +22,7 @@ class SqlaUserDataMapper(UserCommandGateway):
         except SQLAlchemyError as error:
             raise DataMapperError(DB_QUERY_FAILED) from error
 
-    async def read_by_id(self, user_id: ViewerId) -> User | None:
+    async def read_by_id(self, user_id: UserId) -> User | None:
         """:raises DataMapperError:"""
         select_stmt: Select[tuple[User]] = select(User).where(User.id_ == user_id)  # type: ignore
 

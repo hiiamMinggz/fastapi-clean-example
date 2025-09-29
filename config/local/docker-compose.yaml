@@ -30,6 +30,10 @@ services:
       POSTGRES_HOST: web_app_db_pg
     ports:
       - "${UVICORN_PORT}:${UVICORN_PORT}"
+    volumes:
+      - ../../src:/app/src:ro  # Mount source code for hot-reload
+      - ../../alembic:/app/alembic:ro  # Mount alembic migrations
+      - ../../alembic.ini:/app/alembic.ini:ro  # Mount alembic config
     depends_on:
       web_app_db_pg:
         condition: service_healthy
@@ -37,8 +41,8 @@ services:
       sh -c "
       echo 'Running alembic migrations...' &&
       alembic upgrade head &&
-      echo 'Starting Uvicorn...' &&
-      uvicorn app.run:make_app --host ${UVICORN_HOST} --port ${UVICORN_PORT} --loop uvloop
+      echo 'Starting Uvicorn with auto-reload...' &&
+      uvicorn app.run:make_app --host ${UVICORN_HOST} --port ${UVICORN_PORT} --reload --loop uvloop
       "
 
 volumes:

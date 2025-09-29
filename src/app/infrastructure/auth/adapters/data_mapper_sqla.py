@@ -1,7 +1,7 @@
 from sqlalchemy import Delete, delete
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.domain.value_objects.id import ViewerId
+from app.domain.value_objects.id import UserId
 from app.infrastructure.adapters.constants import DB_QUERY_FAILED
 from app.infrastructure.auth.adapters.types import AuthAsyncSession
 from app.infrastructure.auth.session.model import AuthSession
@@ -61,7 +61,7 @@ class SqlaAuthSessionDataMapper(AuthSessionGateway):
         except SQLAlchemyError as error:
             raise DataMapperError(DB_QUERY_FAILED) from error
 
-    async def delete_all_for_user(self, user_id: ViewerId) -> None:
+    async def delete_all_for_user(self, user_id: UserId) -> None:
         """:raises DataMapperError:"""
         delete_stmt: Delete = delete(AuthSession).where(
             AuthSession.user_id == user_id,  # type: ignore

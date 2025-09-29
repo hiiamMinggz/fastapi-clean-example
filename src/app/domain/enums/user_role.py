@@ -3,8 +3,8 @@ from enum import StrEnum
 
 class UserRole(StrEnum):
     SUPER_ADMIN = "super_admin"
-    ADMIN = "admin"
-    USER = "user"
+    VIEWER = "viewer"
+    STREAMER = "streamer"
 
     @property
     def is_assignable(self) -> bool:

@@ -21,6 +21,8 @@ from app.domain.exceptions.user import UsernameAlreadyExistsError
 from app.domain.services.user import UserService
 from app.domain.value_objects.raw_password import RawPassword
 from app.domain.value_objects.username import Username
+from app.domain.value_objects.text import Email
+from app.domain.value_objects.time import CreatedAt, UpdatedAt
 
 log = logging.getLogger(__name__)
 
@@ -28,8 +30,9 @@ log = logging.getLogger(__name__)
 @dataclass(frozen=True, slots=True, kw_only=True)
 class CreateUserRequest:
     username: str
+    email: str
     password: str
-    role: UserRole
+    user_type: UserRole  # Changed from role to user_type for consistency
 
 
 class CreateUserResponse(TypedDict):
@@ -37,11 +40,6 @@ class CreateUserResponse(TypedDict):
 
 
 class CreateUserInteractor:
-    """
-    - Open to admins.
-    - Creates a new user, including admins, if the username is unique.
-    - Only super admins can create new admins.
-    """
 
     def __init__(
         self,
@@ -67,23 +65,26 @@ class CreateUserInteractor:
         :raises UsernameAlreadyExistsError:
         """
         log.info(
-            "Create user: started. Username: '%s'.",
+            "Create user: started. Username: '%s', Email: '%s'",
             request_data.username,
+            request_data.email,
         )
 
-        current_user = await self._current_user_service.get_current_user()
-
-        authorize(
-            CanManageRole(),
-            context=RoleManagementContext(
-                subject=current_user,
-                target_role=request_data.role,
-            ),
-        )
-
+        # Create value objects
         username = Username(request_data.username)
+        email = Email(request_data.email)
         password = RawPassword(request_data.password)
-        user = self._user_service.create_user(username, password, request_data.role)
+        created_at = CreatedAt.now()
+        updated_at = UpdatedAt.now()
+
+        user = self._user_service.create_user(
+            username=username,
+            email=email,
+            raw_password=password,
+            user_type=request_data.user_type,
+            created_at=created_at,
+            updated_at=updated_at,
+        )
 
         self._user_command_gateway.add(user)
 
@@ -94,5 +95,10 @@ class CreateUserInteractor:
 
         await self._transaction_manager.commit()
 
-        log.info("Create user: done. Username: '%s'.", user.username.value)
+        log.info(
+            "Create user: done. Username: '%s', Email: '%s', Type: %s",
+            user.username.value,
+            user.email.value,
+            user.user_type.name,
+        )
         return CreateUserResponse(id=user.id_.value)

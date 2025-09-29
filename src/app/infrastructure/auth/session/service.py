@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from app.domain.value_objects.id import ViewerId
+from app.domain.value_objects.id import UserId
 from app.infrastructure.auth.exceptions import AuthenticationError
 from app.infrastructure.auth.session.constants import (
     AUTH_IS_UNAVAILABLE,
@@ -44,7 +44,7 @@ class AuthSessionService:
         self._auth_session_timer = auth_session_timer
         self._cached_auth_session: AuthSession | None = None
 
-    async def issue_session(self, user_id: ViewerId) -> None:
+    async def issue_session(self, user_id: UserId) -> None:
         """:raises AuthenticationError:"""
         log.debug("Issue auth session: started. User ID: '%s'.", user_id.value)
 
@@ -71,7 +71,7 @@ class AuthSessionService:
             auth_session.id_,
         )
 
-    async def get_authenticated_user_id(self) -> ViewerId:
+    async def get_authenticated_user_id(self) -> UserId:
         """:raises AuthenticationError:"""
         log.debug("Get authenticated user ID: started.")
 
@@ -133,7 +133,7 @@ class AuthSessionService:
 
         self._cached_auth_session = None
 
-    async def terminate_all_sessions_for_user(self, user_id: ViewerId) -> None:
+    async def terminate_all_sessions_for_user(self, user_id: UserId) -> None:
         """:raises DataMapperError:"""
         log.debug(
             "Terminate all sessions for user: started. User ID: '%s'.",

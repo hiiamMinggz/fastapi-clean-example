@@ -5,11 +5,7 @@ from app.domain.value_objects.base import ValueObject
 
 
 @dataclass(frozen=True, slots=True, repr=False)
-class ViewerId(ValueObject):
-    value: UUID
-
-@dataclass(frozen=True, slots=True, repr=False)
-class StreamerId(ValueObject):
+class UserId(ValueObject):
     value: UUID
 
 @dataclass(frozen=True, slots=True, repr=False)

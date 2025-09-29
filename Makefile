@@ -33,7 +33,7 @@ up.db-echo: guard-APP_ENV
 up: guard-APP_ENV
 	@echo "APP_ENV=$(APP_ENV)"
 	@cd $(CONFIGS_DIG)/$(APP_ENV) && $(DOCKER_COMPOSE) --env-file .env.$(APP_ENV) up -d --build
-
+	@cd $(CONFIGS_DIG)/$(APP_ENV) && $(DOCKER_COMPOSE) --env-file .env.$(APP_ENV) logs -f
 up.echo: guard-APP_ENV
 	@echo "APP_ENV=$(APP_ENV)"
 	@cd $(CONFIGS_DIG)/$(APP_ENV) && $(DOCKER_COMPOSE) --env-file .env.$(APP_ENV) up --build

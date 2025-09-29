@@ -4,7 +4,7 @@ from uuid import UUID
 
 from app.domain.value_objects.base import ValueObject
 from app.domain.value_objects.raw_password import RawPassword
-from app.domain.value_objects.id import ViewerId
+from app.domain.value_objects.id import UserId
 from app.domain.value_objects.user_password_hash import UserPasswordHash
 from app.domain.value_objects.username import Username
 
@@ -28,8 +28,8 @@ def create_multi_field_vo(value1: int = 1, value2: str = "Alice") -> MultiFieldV
     return MultiFieldVO(value1, value2)
 
 
-def create_user_id(value: UUID | None = None) -> ViewerId:
-    return ViewerId(value if value else uuid.uuid4())
+def create_user_id(value: UUID | None = None) -> UserId:
+    return UserId(value if value else uuid.uuid4())
 
 
 def create_username(value: str = "Alice") -> Username:

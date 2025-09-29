@@ -1,7 +1,7 @@
 from app.domain.entities.base import Entity
 from app.domain.enums.challenge_status import Status
 from app.domain.enums.fee import Fee
-from app.domain.value_objects.id import ChallengeId, ViewerId, StreamerId
+from app.domain.value_objects.id import ChallengeId, UserId
 from app.domain.value_objects.text import Title, Description
 from app.domain.value_objects.token import ChallengeAmount, StreamerChallengeFixedAmount
 from app.domain.value_objects.time import CreatedAt, ExpiresAt, AcceptedAt
@@ -14,8 +14,8 @@ class Challenge(Entity[ChallengeId]):
         id_: ChallengeId,
         title: Title,
         description: Description,
-        created_by: ViewerId,
-        assigned_to: StreamerId,
+        created_by: UserId,
+        assigned_to: UserId,
         amount: ChallengeAmount,
         fee: Fee,
         streamer_fixed_amount: StreamerChallengeFixedAmount,

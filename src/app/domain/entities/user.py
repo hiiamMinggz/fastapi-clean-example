@@ -1,22 +1,33 @@
 from app.domain.entities.base import Entity
 from app.domain.enums.user_role import UserRole
-from app.domain.value_objects.id import ViewerId
+from app.domain.value_objects.id import UserId
 from app.domain.value_objects.user_password_hash import UserPasswordHash
 from app.domain.value_objects.username import Username
+from app.domain.value_objects.text import Email
+from app.domain.value_objects.credibility import Credibility
+from app.domain.value_objects.token import Balance
+from app.domain.value_objects.time import CreatedAt, UpdatedAt
 
-
-class User(Entity[ViewerId]):
+class User(Entity[UserId]):
     def __init__(
         self,
         *,
-        id_: ViewerId,
+        id_: UserId,
         username: Username,
+        email: Email,
         password_hash: UserPasswordHash,
-        role: UserRole,
-        is_active: bool,
+        user_type: UserRole,
+        locked: bool,
+        credibility: Credibility,
+        balance: Balance,
+        created_at: CreatedAt,
+        updated_at: UpdatedAt,
     ) -> None:
         super().__init__(id_=id_)
         self.username = username
+        self.email = email
         self.password_hash = password_hash
-        self.role = role
-        self.is_active = is_active
+        self.user_type = user_type
+        self.locked = locked
+        self.credibility = credibility
+        self.balance = balance

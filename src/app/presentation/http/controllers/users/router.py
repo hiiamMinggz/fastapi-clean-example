@@ -7,7 +7,7 @@ from app.presentation.http.controllers.users.change_password import (
     create_change_password_router,
 )
 from app.presentation.http.controllers.users.create_user import (
-    create_create_user_router,
+    create_user_router,
 )
 from app.presentation.http.controllers.users.deactivate_user import (
     create_deactivate_user_router,
@@ -28,7 +28,7 @@ def create_users_router() -> APIRouter:
     )
 
     sub_routers = (
-        create_create_user_router(),
+        create_user_router(),
         create_list_users_router(),
         create_change_password_router(),
         create_grant_admin_router(),

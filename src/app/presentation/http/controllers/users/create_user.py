@@ -20,6 +20,9 @@ from app.domain.exceptions.user import (
 )
 from app.infrastructure.auth.exceptions import AuthenticationError
 from app.infrastructure.exceptions.gateway import DataMapperError
+from app.domain.value_objects.username import Username
+from app.domain.value_objects.text import Email
+from app.domain.value_objects.raw_password import RawPassword
 from app.presentation.http.auth.fastapi_openapi_markers import cookie_scheme
 from app.presentation.http.errors.callbacks import log_error, log_info
 from app.presentation.http.errors.translators import (
@@ -28,35 +31,66 @@ from app.presentation.http.errors.translators import (
 
 
 class CreateUserRequestPydantic(BaseModel):
-    """
-    Using a Pydantic model here is generally unnecessary.
-    It's only implemented to render a specific Swagger UI (OpenAPI) schema.
-    """
+    """Request model for user creation with validation rules."""
 
     model_config = ConfigDict(frozen=True)
 
-    username: str
-    password: str
-    role: UserRole = Field(default=UserRole.USER)
+    username: str = Field(
+        ...,
+        min_length=3,
+        max_length=50,
+        pattern="^[a-zA-Z0-9_-]+$",
+        description="Username must be between 3 and 50 characters, containing only letters, numbers, underscores, and hyphens",
+    )
+    email: str = Field(
+        ...,
+        pattern=r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$",
+        description="Valid email address",
+    )
+    password: str = Field(
+        ...,
+        min_length=8,
+        max_length=128,
+        description="Password must be between 8 and 128 characters",
+    )
+    user_type: UserRole = Field(
+        default=UserRole.VIEWER,
+        description="User type (VIEWER, STREAMER)",
+    )
 
 
-def create_create_user_router() -> APIRouter:
+def create_user_router() -> APIRouter:
     router = ErrorAwareRouter()
 
     @router.post(
         "/",
         description=getdoc(CreateUserInteractor),
         error_map={
-            AuthenticationError: status.HTTP_401_UNAUTHORIZED,
+            AuthenticationError: rule(
+                status=status.HTTP_401_UNAUTHORIZED,
+                on_error=log_info,
+            ),
             DataMapperError: rule(
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
                 translator=ServiceUnavailableTranslator(),
                 on_error=log_error,
             ),
-            AuthorizationError: status.HTTP_403_FORBIDDEN,
-            DomainFieldError: status.HTTP_400_BAD_REQUEST,
-            RoleAssignmentNotPermittedError: status.HTTP_422_UNPROCESSABLE_ENTITY,
-            UsernameAlreadyExistsError: status.HTTP_409_CONFLICT,
+            AuthorizationError: rule(
+                status=status.HTTP_403_FORBIDDEN,
+                on_error=log_info,
+            ),
+            DomainFieldError: rule(
+                status=status.HTTP_400_BAD_REQUEST,
+                on_error=log_info,
+            ),
+            RoleAssignmentNotPermittedError: rule(
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                on_error=log_info,
+            ),
+            UsernameAlreadyExistsError: rule(
+                status=status.HTTP_409_CONFLICT,
+                on_error=log_info,
+            ),
         },
         default_on_error=log_info,
         status_code=status.HTTP_201_CREATED,
@@ -67,10 +101,19 @@ def create_create_user_router() -> APIRouter:
         request_data_pydantic: CreateUserRequestPydantic,
         interactor: FromDishka[CreateUserInteractor],
     ) -> CreateUserResponse:
+        # Pre-validate value objects before creating request
+        try:
+            Username(request_data_pydantic.username)
+            Email(request_data_pydantic.email)
+            RawPassword(request_data_pydantic.password)
+        except DomainFieldError as e:
+            raise DomainFieldError(f"Invalid input: {str(e)}")
+
         request_data = CreateUserRequest(
             username=request_data_pydantic.username,
+            email=request_data_pydantic.email,
             password=request_data_pydantic.password,
-            role=request_data_pydantic.role,
+            user_type=request_data_pydantic.user_type,
         )
         return await interactor.execute(request_data)
 
