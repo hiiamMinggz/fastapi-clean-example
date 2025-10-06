@@ -29,7 +29,7 @@ class ChallengeService:
             accepted_at: AcceptedAt,
         ) -> Challenge:
         
-        challenge_id = self.challenge_id_generator()
+        challenge_id = ChallengeId(self.challenge_id_generator())
         challenge = Challenge(
             id_=challenge_id,
             title=title,

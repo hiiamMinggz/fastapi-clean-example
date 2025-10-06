@@ -1,10 +1,12 @@
 from dataclasses import dataclass
+from functools import total_ordering
 from typing import ClassVar, Final
 
 from app.domain.exceptions.base import DomainFieldError
 from app.domain.value_objects.base import ValueObject
 from decimal import Decimal
 
+@total_ordering
 @dataclass(frozen=True, slots=True, repr=False)
 class Token(ValueObject):
     """raises DomainFieldError"""
@@ -15,6 +17,16 @@ class Token(ValueObject):
         """:raises DomainFieldError:"""
         super(Token, self).__post_init__()
         self._validate_token_type(self.value)
+    
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Token):
+            return NotImplemented
+        return self.value == other.value
+
+    def __lt__(self, other: object) -> bool:
+        if not isinstance(other, Token):
+            return NotImplemented
+        return self.value < other.value
 
     def _validate_token_type(self, token_value: Decimal) -> None:
         if not isinstance(token_value, Decimal):
@@ -25,13 +37,14 @@ class Token(ValueObject):
 @dataclass(frozen=True, slots=True, repr=False)
 class Balance(Token):
     """raises DomainFieldError"""
-    ZERO: ClassVar[Final[Decimal]] = "0.00"
+    ZERO: ClassVar[Final[Decimal]] = Decimal("0.00")
 
     value: Decimal
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
         super(Balance, self).__post_init__()
+        self._validate_balance(self.value)
 
     def _validate_balance(self, balance_value: Decimal) -> None:
         if balance_value < self.ZERO:
@@ -42,7 +55,7 @@ class Balance(Token):
 @dataclass(frozen=True, slots=True, repr=False)
 class ChallengeAmount(Token):
     """raises DomainFieldError"""
-    ZERO: ClassVar[Final[Decimal]] = "0.00"
+    ZERO: ClassVar[Final[Decimal]] = Decimal("0.00")
 
     value: Decimal
 
@@ -60,7 +73,7 @@ class ChallengeAmount(Token):
 @dataclass(frozen=True, slots=True, repr=False)
 class DonateAmount(Token):
     """raises DomainFieldError"""
-    ZERO: ClassVar[Final[Decimal]] = "0.00"
+    ZERO: ClassVar[Final[Decimal]] = Decimal("0.00")
 
     value: Decimal
 
@@ -78,7 +91,7 @@ class DonateAmount(Token):
 @dataclass(frozen=True, slots=True, repr=False)
 class CompetitiveAmount(Token):
     """raises DomainFieldError"""
-    ZERO: ClassVar[Final[Decimal]] = "0.00"
+    ZERO: ClassVar[Final[Decimal]] = Decimal("0.00")
 
     value: Decimal
 
@@ -96,7 +109,7 @@ class CompetitiveAmount(Token):
 @dataclass(frozen=True, slots=True, repr=False)
 class StreamerChallengeFixedAmount(Token):
     """raises DomainFieldError"""
-    ZERO: ClassVar[Final[Decimal]] = "0.00"
+    ZERO: ClassVar[Final[Decimal]] = Decimal("0.00")
 
     value: Decimal
 

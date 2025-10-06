@@ -26,9 +26,11 @@ from app.infrastructure.persistence_sqla.mappings.auth_session import (
 )
 from app.infrastructure.persistence_sqla.mappings.user import map_users_table
 from app.infrastructure.persistence_sqla.mappings.challenge import map_challenges_table
+from app.infrastructure.persistence_sqla.mappings.streamer_profile import map_streamer_profiles_table
 
 
 def map_tables() -> None:
     map_users_table()
     map_auth_sessions_table()
     map_challenges_table()
+    map_streamer_profiles_table()

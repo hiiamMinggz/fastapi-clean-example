@@ -6,9 +6,9 @@ from dishka.integrations.fastapi import inject
 from fastapi import APIRouter, Path, Security, status
 from fastapi_error_map import ErrorAwareRouter, rule
 
-from app.application.commands.grant_admin import (
-    GrantAdminInteractor,
-    GrantAdminRequest,
+from app.application.commands.grant_streamer import (
+    GrantStreamerInteractor,
+    GrantStreamerRequest,
 )
 from app.application.common.exceptions.authorization import AuthorizationError
 from app.domain.exceptions.base import DomainFieldError
@@ -25,12 +25,12 @@ from app.presentation.http.errors.translators import (
 )
 
 
-def create_grant_admin_router() -> APIRouter:
+def create_grant_streamer_router() -> APIRouter:
     router = ErrorAwareRouter()
 
     @router.patch(
-        "/{username}/grant-admin",
-        description=getdoc(GrantAdminInteractor),
+        "/{user_id}/grant-streamer",
+        description=getdoc(GrantStreamerInteractor),
         error_map={
             AuthenticationError: status.HTTP_401_UNAUTHORIZED,
             DataMapperError: rule(
@@ -48,11 +48,11 @@ def create_grant_admin_router() -> APIRouter:
         dependencies=[Security(cookie_scheme)],
     )
     @inject
-    async def grant_admin(
-        username: Annotated[str, Path()],
-        interactor: FromDishka[GrantAdminInteractor],
+    async def grant_streamer(
+        user_id: Annotated[str, Path()],
+        interactor: FromDishka[GrantStreamerInteractor],
     ) -> None:
-        request_data = GrantAdminRequest(username)
+        request_data = GrantStreamerRequest(user_id)
         await interactor.execute(request_data)
 
     return router

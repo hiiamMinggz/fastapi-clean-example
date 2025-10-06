@@ -7,8 +7,8 @@ from fastapi import APIRouter, Path, Security, status
 from fastapi_error_map import ErrorAwareRouter, rule
 
 from app.application.commands.revoke_admin import (
-    RevokeAdminInteractor,
-    RevokeAdminRequest,
+    RevokeStreamerInteractor,
+    RevokeStreamerRequest,
 )
 from app.application.common.exceptions.authorization import AuthorizationError
 from app.domain.exceptions.base import DomainFieldError
@@ -25,12 +25,12 @@ from app.presentation.http.errors.translators import (
 )
 
 
-def create_revoke_admin_router() -> APIRouter:
+def create_revoke_streamer_router() -> APIRouter:
     router = ErrorAwareRouter()
 
     @router.patch(
-        "/{username}/revoke-admin",
-        description=getdoc(RevokeAdminInteractor),
+        "/{user_id}/revoke-streamer",
+        description=getdoc(RevokeStreamerInteractor),
         error_map={
             AuthenticationError: status.HTTP_401_UNAUTHORIZED,
             DataMapperError: rule(
@@ -48,11 +48,11 @@ def create_revoke_admin_router() -> APIRouter:
         dependencies=[Security(cookie_scheme)],
     )
     @inject
-    async def revoke_admin(
-        username: Annotated[str, Path()],
-        interactor: FromDishka[RevokeAdminInteractor],
+    async def revoke_streamer(
+        user_id: Annotated[str, Path()],
+        interactor: FromDishka[RevokeStreamerInteractor],
     ) -> None:
-        request_data = RevokeAdminRequest(username)
+        request_data = RevokeStreamerRequest(user_id)
         await interactor.execute(request_data)
 
     return router

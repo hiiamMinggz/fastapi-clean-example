@@ -1,10 +1,12 @@
 from dataclasses import dataclass
+from functools import total_ordering
 from typing import ClassVar, Final
 
 from app.domain.exceptions.base import DomainFieldError
 from app.domain.value_objects.base import ValueObject
 from datetime import datetime
 
+@total_ordering
 @dataclass(frozen=True, slots=True, repr=False)
 class Time(ValueObject):
     """raises DomainFieldError"""
@@ -15,6 +17,16 @@ class Time(ValueObject):
         """:raises DomainFieldError:"""
         super(Time, self).__post_init__()
         self._validate_time_type(self.value)
+        
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Time):
+            return NotImplemented
+        return self.value == other.value
+
+    def __lt__(self, other: object) -> bool:
+        if not isinstance(other, Time):
+            return NotImplemented
+        return self.value < other.value
 
     def _validate_time_type(self, time_value: datetime) -> None:
         if not isinstance(time_value, datetime):

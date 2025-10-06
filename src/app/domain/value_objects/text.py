@@ -41,7 +41,7 @@ class Description(ValueObject):
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
-        super(Title, self).__post_init__()
+        super(Description, self).__post_init__()
         if self.value is not None:
             self._validate_description_length(self.value)
 

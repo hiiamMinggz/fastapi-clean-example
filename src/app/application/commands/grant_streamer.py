@@ -15,19 +15,21 @@ from app.application.common.services.authorization.permissions import (
 from app.application.common.services.current_user import CurrentUserService
 from app.domain.entities.user import User
 from app.domain.enums.user_role import UserRole
-from app.domain.exceptions.user import UserNotFoundByUsernameError
+from app.domain.enums.user_status import UserStatus
+from app.domain.exceptions.user import UserNotFoundByUserIdError, UserNotFoundByUsernameError
 from app.domain.services.user import UserService
+from app.domain.value_objects.id import UserId
 from app.domain.value_objects.username import Username
 
 log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, slots=True)
-class GrantAdminRequest:
-    username: str
+class GrantStreamerRequest:
+    user_id: str
 
 
-class GrantAdminInteractor:
+class GrantStreamerInteractor:
     """
     - Open to super admins.
     - Grants admin rights to a specified user.
@@ -46,7 +48,7 @@ class GrantAdminInteractor:
         self._user_service = user_service
         self._transaction_manager = transaction_manager
 
-    async def execute(self, request_data: GrantAdminRequest) -> None:
+    async def execute(self, request_data: GrantStreamerRequest) -> None:
         """
         :raises AuthenticationError:
         :raises DataMapperError:
@@ -56,8 +58,8 @@ class GrantAdminInteractor:
         :raises RoleChangeNotPermittedError:
         """
         log.info(
-            "Grant admin: started. Username: '%s'.",
-            request_data.username,
+            "Grant streamer: started. User_id: '%s'.",
+            request_data.user_id,
         )
 
         current_user = await self._current_user_service.get_current_user()
@@ -66,19 +68,22 @@ class GrantAdminInteractor:
             CanManageRole(),
             context=RoleManagementContext(
                 subject=current_user,
-                target_role=UserRole.ADMIN,
+                target_role=UserRole.STREAMER,
             ),
         )
 
-        username = Username(request_data.username)
-        user: User | None = await self._user_command_gateway.read_by_username(
-            username,
+        user_id = UserId(request_data.user_id)
+        user: User | None = await self._user_command_gateway.read_by_id(
+            user_id,
             for_update=True,
         )
         if user is None:
-            raise UserNotFoundByUsernameError(username)
+            raise UserNotFoundByUserIdError(user_id)
 
-        self._user_service.toggle_user_admin_role(user, is_admin=True)
+        self._user_service.toggle_user_role(user, is_streamer=True)
+        self._user_service.toggle_user_status(user, status=UserStatus.ACTIVE)
         await self._transaction_manager.commit()
 
-        log.info("Grant admin: done. Username: '%s'.", user.username.value)
+        log.info("Grant streamer: done. User id: '%s'.", user.id_.value)
+        
+    # TODO: add super_admin table

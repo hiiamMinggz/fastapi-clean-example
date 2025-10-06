@@ -77,7 +77,7 @@ class CreateUserInteractor:
         created_at = CreatedAt.now()
         updated_at = UpdatedAt.now()
 
-        user = self._user_service.create_user(
+        user = self._user_service.create_viewer(
             username=username,
             email=email,
             raw_password=password,

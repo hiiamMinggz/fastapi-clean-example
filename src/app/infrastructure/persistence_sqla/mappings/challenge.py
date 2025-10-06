@@ -18,9 +18,9 @@ challenges_table = Table(
     Column("description", String(Description.MAX_LEN), nullable=True),
     Column("created_by", UUID(as_uuid=True), nullable=False),
     Column("assigned_to", UUID(as_uuid=True), nullable=False),
-    Column("amount", Numeric(precision=10, scale=2), nullable=False),
+    Column("amount", Numeric(precision=12, scale=2), nullable=False),
     Column("fee", Enum(Fee, name="challengefee"), nullable=False),
-    Column("streamer_fixed_amount", Numeric(precision=10, scale=2), nullable=False),
+    Column("streamer_fixed_amount", Numeric(precision=12, scale=2), nullable=False),
     Column(
         "status",
         Enum(Status, name="challengestatus"),

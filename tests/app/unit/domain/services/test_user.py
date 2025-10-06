@@ -40,7 +40,7 @@ def test_creates_active_user_with_hashed_password(
     sut = UserService(user_id_generator, password_hasher)
 
     # Act
-    result = sut.create_user(username, raw_password, role)
+    result = sut.create_viewer(username, raw_password, role)
 
     # Assert
     assert isinstance(result, User)
@@ -67,7 +67,7 @@ def test_creates_inactive_user_if_specified(
     sut = UserService(user_id_generator, password_hasher)
 
     # Act
-    result = sut.create_user(username, raw_password, is_active=False)
+    result = sut.create_viewer(username, raw_password, is_active=False)
 
     # Assert
     assert not result.is_active
@@ -82,7 +82,7 @@ def test_fails_to_create_user_with_unassignable_role(
     sut = UserService(user_id_generator, password_hasher)
 
     with pytest.raises(RoleAssignmentNotPermittedError):
-        sut.create_user(
+        sut.create_viewer(
             username=username,
             raw_password=raw_password,
             role=UserRole.SUPER_ADMIN,

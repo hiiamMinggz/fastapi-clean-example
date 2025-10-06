@@ -1,6 +1,8 @@
+from datetime import datetime, timezone
 from app.domain.entities.user import User
 from app.domain.enums.user_role import UserRole
 
+from app.domain.enums.user_status import UserStatus
 from app.domain.ports.password_hasher import PasswordHasher
 from app.domain.ports.id_generator import IdGenerator
 from app.domain.value_objects.credibility import Credibility
@@ -21,18 +23,24 @@ class UserService:
         self._user_id_generator = user_id_generator
         self._password_hasher = password_hasher
 
-    def create_user(
+    def create_viewer(
         self,
         username: Username,
         raw_password: RawPassword,
         email: Email,
-        user_type: UserRole,
-        created_at: CreatedAt,
-        updated_at: UpdatedAt,
     ) -> User:
 
         user_id = UserId(self._user_id_generator())
         password_hash = UserPasswordHash(self._password_hasher.hash(raw_password))
+        user_type = UserRole.VIEWER
+        staus = UserStatus.ACTIVE
+        inited_credibility = Credibility(Credibility.MAX_CREDIBILITY)
+        inited_balance = Balance(Balance.ZERO)
+        
+        now = datetime.now(timezone.utc)
+        created_at = CreatedAt(now)
+        updated_at = UpdatedAt(now)
+        
         return User(
             id_=user_id,
             username=username,
@@ -40,8 +48,41 @@ class UserService:
             email=email,
             user_type=user_type,
             locked=False,
-            credibility=Credibility(0),
-            balance=Balance(0),
+            status=staus,
+            credibility=inited_credibility,
+            balance=inited_balance,
+            created_at=created_at,
+            updated_at=updated_at,
+        )
+        
+    def create_streamer(
+        self,
+        username: Username,
+        raw_password: RawPassword,
+        email: Email,
+    ) -> User:
+
+        user_id = UserId(self._user_id_generator())
+        password_hash = UserPasswordHash(self._password_hasher.hash(raw_password))
+        user_type = UserRole.STREAMER
+        status = UserStatus.PENDING
+        inited_credibility = Credibility(Credibility.MAX_CREDIBILITY)
+        inited_balance = Balance(Balance.ZERO)
+        
+        now = datetime.now(timezone.utc)
+        created_at = CreatedAt(now)
+        updated_at = UpdatedAt(now)
+        
+        return User(
+            id_=user_id,
+            username=username,
+            password_hash=password_hash,
+            email=email,
+            user_type=user_type,
+            locked=False,
+            status=status,
+            credibility=inited_credibility,
+            balance=inited_balance,
             created_at=created_at,
             updated_at=updated_at,
         )
@@ -58,4 +99,12 @@ class UserService:
 
     def toggle_user_activation(self, user: User, *, locked: bool) -> None:
         user.locked = locked
-
+        
+    def toggle_user_role(self, user: User, *, is_streamer: bool) -> None:
+        if is_streamer:
+            user.user_type = UserRole.STREAMER
+        else:
+            user.user_type = UserRole.VIEWER
+        
+    def toggle_user_status(self, user: User, *, status: UserStatus) -> None:
+        user.status = status

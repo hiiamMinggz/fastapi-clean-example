@@ -7,9 +7,11 @@ from app.application.common.ports.flusher import Flusher
 from app.application.common.ports.transaction_manager import TransactionManager
 from app.application.common.ports.user_command_gateway import UserCommandGateway
 from app.application.common.services.current_user import CurrentUserService
+from app.domain.enums.user_role import UserRole
 from app.domain.exceptions.user import UsernameAlreadyExistsError
 from app.domain.services.user import UserService
 from app.domain.value_objects.raw_password import RawPassword
+from app.domain.value_objects.text import Email
 from app.domain.value_objects.username import Username
 from app.infrastructure.auth.exceptions import (
     AlreadyAuthenticatedError,
@@ -23,16 +25,17 @@ log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
-class SignUpRequest:
+class ViewerSignUpRequest:
     username: str
     password: str
+    email: str
 
 
-class SignUpResponse(TypedDict):
+class ViewerSignUpResponse(TypedDict):
     id: UUID
 
 
-class SignUpHandler:
+class ViewerSignUpHandler:
     """
     - Open to everyone.
     - Registers a new user with validation and uniqueness checks.
@@ -54,7 +57,7 @@ class SignUpHandler:
         self._flusher = flusher
         self._transaction_manager = transaction_manager
 
-    async def execute(self, request_data: SignUpRequest) -> SignUpResponse:
+    async def execute(self, request_data: ViewerSignUpRequest) -> ViewerSignUpResponse:
         """
         :raises AlreadyAuthenticatedError:
         :raises AuthorizationError:
@@ -73,10 +76,16 @@ class SignUpHandler:
 
         username = Username(request_data.username)
         password = RawPassword(request_data.password)
+        email = Email(request_data.email)
+        
+        viewer = self._user_service.create_viewer(
+            username=username,
+            raw_password=password,
+            email=email,
+        )
+        
 
-        user = self._user_service.create_user(username, password)
-
-        self._user_command_gateway.add(user)
+        self._user_command_gateway.add(viewer)
 
         try:
             await self._flusher.flush()
@@ -85,5 +94,5 @@ class SignUpHandler:
 
         await self._transaction_manager.commit()
 
-        log.info("Sign up: done. Username: '%s'.", user.username.value)
-        return SignUpResponse(id=user.id_.value)
+        log.info("Viewer sign up: done. Username: '%s'.", viewer.username.value)
+        return ViewerSignUpResponse(id=viewer.id_.value)

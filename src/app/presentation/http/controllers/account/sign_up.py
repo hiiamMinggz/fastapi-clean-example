@@ -12,10 +12,15 @@ from app.domain.exceptions.user import (
     UsernameAlreadyExistsError,
 )
 from app.infrastructure.auth.exceptions import AlreadyAuthenticatedError
-from app.infrastructure.auth.handlers.sign_up import (
-    SignUpHandler,
-    SignUpRequest,
-    SignUpResponse,
+from app.infrastructure.auth.handlers.viewer_sign_up import (
+    ViewerSignUpHandler,
+    ViewerSignUpRequest,
+    ViewerSignUpResponse,
+)
+from app.infrastructure.auth.handlers.streamer_sign_up import (
+    StreamerSignUpHandler,
+    StreamerSignUpRequest,
+    StreamerSignUpResponse,
 )
 from app.infrastructure.exceptions.gateway import DataMapperError
 from app.presentation.http.errors.callbacks import (
@@ -27,12 +32,12 @@ from app.presentation.http.errors.translators import (
 )
 
 
-def create_sign_up_router() -> APIRouter:
+def create_viewer_sign_up_router() -> APIRouter:
     router = ErrorAwareRouter()
 
     @router.post(
-        "/signup",
-        description=getdoc(SignUpHandler),
+        "/viewer/signup",
+        description=getdoc(ViewerSignUpHandler),
         error_map={
             AlreadyAuthenticatedError: status.HTTP_403_FORBIDDEN,
             AuthorizationError: status.HTTP_403_FORBIDDEN,
@@ -49,10 +54,41 @@ def create_sign_up_router() -> APIRouter:
         status_code=status.HTTP_201_CREATED,
     )
     @inject
-    async def sign_up(
-        request_data: SignUpRequest,
-        handler: FromDishka[SignUpHandler],
-    ) -> SignUpResponse:
+    async def viewer_sign_up(
+        request_data: ViewerSignUpRequest,
+        handler: FromDishka[ViewerSignUpHandler],
+    ) -> ViewerSignUpResponse:
+        return await handler.execute(request_data)
+
+    return router
+
+
+def create_streamer_sign_up_router() -> APIRouter:
+    router = ErrorAwareRouter()
+
+    @router.post(
+        "/streamer/signup",
+        description=getdoc(StreamerSignUpHandler),
+        error_map={
+            AlreadyAuthenticatedError: status.HTTP_403_FORBIDDEN,
+            AuthorizationError: status.HTTP_403_FORBIDDEN,
+            DataMapperError: rule(
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+                translator=ServiceUnavailableTranslator(),
+                on_error=log_error,
+            ),
+            DomainFieldError: status.HTTP_400_BAD_REQUEST,
+            RoleAssignmentNotPermittedError: status.HTTP_422_UNPROCESSABLE_ENTITY,
+            UsernameAlreadyExistsError: status.HTTP_409_CONFLICT,
+        },
+        default_on_error=log_info,
+        status_code=status.HTTP_201_CREATED,
+    )
+    @inject
+    async def viewer_sign_up(
+        request_data: StreamerSignUpRequest,
+        handler: FromDishka[StreamerSignUpHandler],
+    ) -> StreamerSignUpResponse:
         return await handler.execute(request_data)
 
     return router

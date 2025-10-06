@@ -13,11 +13,11 @@ from app.presentation.http.controllers.users.deactivate_user import (
     create_deactivate_user_router,
 )
 from app.presentation.http.controllers.users.grant_admin import (
-    create_grant_admin_router,
+    create_grant_streamer_router,
 )
 from app.presentation.http.controllers.users.list_users import create_list_users_router
 from app.presentation.http.controllers.users.revoke_admin import (
-    create_revoke_admin_router,
+    create_revoke_streamer_router,
 )
 
 
@@ -31,8 +31,8 @@ def create_users_router() -> APIRouter:
         create_user_router(),
         create_list_users_router(),
         create_change_password_router(),
-        create_grant_admin_router(),
-        create_revoke_admin_router(),
+        create_grant_streamer_router(),
+        create_revoke_streamer_router(),
         create_activate_user_router(),
         create_deactivate_user_router(),
     )

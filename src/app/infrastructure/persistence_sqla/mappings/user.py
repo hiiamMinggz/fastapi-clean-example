@@ -1,8 +1,9 @@
-from sqlalchemy import UUID, Boolean, Column, Enum, LargeBinary, String, Table, Integer, DateTime
+from sqlalchemy import UUID, Boolean, Column, Enum, LargeBinary, String, Table, NUMERIC, DateTime, DOUBLE_PRECISION
 from sqlalchemy.orm import composite
 
 from app.domain.entities.user import User
 from app.domain.enums.user_role import UserRole
+from app.domain.enums.user_status import UserStatus
 from app.domain.value_objects.id import UserId
 from app.domain.value_objects.user_password_hash import UserPasswordHash
 from app.domain.value_objects.username import Username
@@ -26,8 +27,14 @@ users_table = Table(
         nullable=False,
     ),
     Column("locked", Boolean, default=False, nullable=False),
-    Column("credibility", Integer, default=100, nullable=False),
-    Column("balance", Integer, default=0, nullable=False),
+    Column(
+        "status",
+        Enum(UserStatus, name="userstatus"),
+        default=UserStatus.PENDING,
+        nullable=False,
+    ),
+    Column("credibility", DOUBLE_PRECISION, default=5.0, nullable=False),
+    Column("balance", NUMERIC(12, 2), default=0, nullable=False),
     Column("created_at", DateTime(timezone=True), nullable=False),
     Column("updated_at", DateTime(timezone=True), nullable=False),
 )
@@ -44,6 +51,7 @@ def map_users_table() -> None:
             "password_hash": composite(UserPasswordHash, users_table.c.password_hash),
             "user_type": users_table.c.user_type,
             "locked": users_table.c.locked,
+            "status": users_table.c.status,
             "credibility": composite(Credibility, users_table.c.credibility),
             "balance": composite(Balance, users_table.c.balance),
             "created_at": composite(CreatedAt, users_table.c.created_at),

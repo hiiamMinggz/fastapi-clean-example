@@ -81,7 +81,7 @@ class LogInHandler:
         if not self._user_service.is_password_valid(user, password):
             raise AuthenticationError(AUTH_INVALID_PASSWORD)
 
-        if not user.is_active:
+        if user.locked:
             raise AuthenticationError(AUTH_ACCOUNT_INACTIVE)
 
         await self._auth_session_service.issue_session(user.id_)
@@ -90,5 +90,5 @@ class LogInHandler:
             "Log in: done. User, ID: '%s', username '%s', role '%s'.",
             user.id_.value,
             user.username.value,
-            user.role.value,
+            user.user_type.value,
         )

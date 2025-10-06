@@ -2,17 +2,23 @@ import logging
 from dataclasses import dataclass
 from typing import TypedDict
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from app.application.common.ports.flusher import Flusher
+from app.application.common.ports.streamer_profile_command_gateway import StreamerProfileCommandGateway
 from app.application.common.ports.transaction_manager import (
     TransactionManager,
 )
 from app.application.common.ports.challenge_command_gateway import ChallengeCommandGateway
 
+from app.application.common.ports.user_command_gateway import UserCommandGateway
 from app.application.common.services.current_user import CurrentUserService
+from app.domain.entities.streamer_profile import StreamerProfile
+from app.domain.entities.user import User
 from app.domain.enums.fee import Fee
 from app.domain.enums.challenge_status import Status
+from app.domain.enums.user_role import UserRole
+from app.domain.exceptions.base import DomainError
 from app.domain.exceptions.user import UsernameAlreadyExistsError
 from app.domain.services.challenge import ChallengeService
 from app.domain.value_objects.text import Title, Description
@@ -50,12 +56,16 @@ class CreateChallengeInteractor:
         current_user_service: CurrentUserService,
         challenge_service: ChallengeService,
         challenge_command_gateway: ChallengeCommandGateway,
+        streamer_profile_gateway: StreamerProfileCommandGateway,
+        user_command_gateway: UserCommandGateway,
         flusher: Flusher,
         transaction_manager: TransactionManager,
     ):
         self._current_user_service = current_user_service
         self._challenge_service = challenge_service
         self._challenge_command_gateway = challenge_command_gateway
+        self._streamer_profile_gateway = streamer_profile_gateway
+        self._user_command_gateway = user_command_gateway
         self._flusher = flusher
         self._transaction_manager = transaction_manager
 
@@ -69,25 +79,32 @@ class CreateChallengeInteractor:
         """
         log.info("Create challenge: started.")
 
-        now = datetime.now(tz='UTC')
+        now = datetime.now(timezone.utc)
 
+        #check assigned_to is a valid streamer
+        streamer_id = UserId(request_data.assigned_to)
+        streamer = await self._user_command_gateway.read_by_id(streamer_id)
+        if not streamer or streamer.user_type != UserRole.STREAMER:
+            raise DomainError("Assigned to is not a valid streamer")
+        
+        streamer_profile = await self._streamer_profile_gateway.read_by_id(streamer_id)
+        
         title = Title(request_data.title)
         description = Description(request_data.description)
         created_by = UserId(request_data.created_by)
-        assigned_to = UserId(request_data.assigned_to)
         amount = ChallengeAmount(Decimal(request_data.amount))
         fee = Fee.CHALLENGE_FEE
-        # TODO: Set streamer fixed amount
-        streamer_fixed_amount = StreamerChallengeFixedAmount()
+        
+        streamer_fixed_amount = streamer_profile.min_amount_challenge
         status = Status.PENDING  # Always PENDING when created
-        created_at = now
+        created_at = CreatedAt(now)
         expires_at = ExpiresAt(request_data.expires_at)
 
         challenge = self._challenge_service.create_challenge(
             title=title,
             description=description,
             created_by=created_by,
-            assigned_to=assigned_to,
+            assigned_to=streamer_id,
             amount=amount,
             fee=fee,
             streamer_fixed_amount=streamer_fixed_amount,

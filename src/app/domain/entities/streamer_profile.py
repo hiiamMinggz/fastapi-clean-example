@@ -1,14 +1,9 @@
 from app.domain.entities.base import Entity
-from app.domain.enums.user_role import UserRole
 from app.domain.value_objects.id import UserId
-from app.domain.value_objects.user_password_hash import UserPasswordHash
-from app.domain.value_objects.username import Username
-from app.domain.value_objects.text import Email
-from app.domain.value_objects.credibility import Credibility
-from app.domain.value_objects.token import StreamerChallengeFixedAmount, Balance
+from app.domain.value_objects.token import StreamerChallengeFixedAmount
 from app.domain.value_objects.time import CreatedAt, UpdatedAt
 
-class Streamer(Entity[UserId]):
+class StreamerProfile(Entity[UserId]):
     def __init__(
         self,
         *,
