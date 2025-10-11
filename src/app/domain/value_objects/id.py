@@ -13,6 +13,10 @@ class ChallengeId(ValueObject):
     value: UUID
 
 @dataclass(frozen=True, slots=True, repr=False)
+class PaymentId(ValueObject):
+    value: UUID
+
+@dataclass(frozen=True, slots=True, repr=False)
 class DonateId(ValueObject):
     value: UUID
 

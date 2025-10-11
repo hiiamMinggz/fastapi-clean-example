@@ -123,3 +123,21 @@ class StreamerChallengeFixedAmount(Token):
             raise DomainFieldError(
                 f"Streamer challenge fixed amount must be greater than or equal to {self.ZERO}, but got {streamer_challenge_fixed_amount_value}.",
             )
+
+@dataclass(frozen=True, slots=True, repr=False)
+class PaymentAmount(Token):
+    """raises DomainFieldError"""
+    ZERO: ClassVar[Final[Decimal]] = Decimal("0.00")
+
+    value: Decimal
+
+    def __post_init__(self) -> None:
+        ":raises DomainFieldError:"
+        super(PaymentAmount, self).__post_init__()
+        self._validate_payment_amount(self.value)
+
+    def _validate_payment_amount(self, payment_amount_value: Decimal) -> None:
+        if payment_amount_value < self.ZERO:
+            raise DomainFieldError(
+                f"Payment amount must be greater than or equal to {self.ZERO}, but got {payment_amount_value}.",
+            )
