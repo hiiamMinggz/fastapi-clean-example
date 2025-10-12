@@ -6,7 +6,7 @@ from dishka.integrations.fastapi import inject
 from fastapi import APIRouter, Body, Path, Security, status
 from fastapi_error_map import ErrorAwareRouter, rule
 
-from app.application.commands.change_password import (
+from app.application.commands.user.change_password import (
     ChangePasswordInteractor,
     ChangePasswordRequest,
 )

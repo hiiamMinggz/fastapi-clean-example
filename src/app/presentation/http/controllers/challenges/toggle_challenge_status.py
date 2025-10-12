@@ -1,21 +1,18 @@
 from inspect import getdoc
 from typing import Annotated
-
 from dishka import FromDishka
 from dishka.integrations.fastapi import inject
 from fastapi import APIRouter, Path, Security, status
+from fastapi.params import Body
 from fastapi_error_map import ErrorAwareRouter, rule
 
-from app.application.commands.user.activate_user import (
-    ActivateUserInteractor,
-    ActivateUserRequest,
+from app.application.commands.challenge.toggle_challenge_status import (
+    ToggleChallengeStatusInteractor,
+    ToggleChallengeStatusRequest,
 )
 from app.application.common.exceptions.authorization import AuthorizationError
-from app.domain.exceptions.base import DomainFieldError
-from app.domain.exceptions.user import (
-    ActivationChangeNotPermittedError,
-    UserNotFoundByUsernameError,
-)
+from app.domain.enums.challenge_status import Status
+from app.domain.exceptions.base import DomainError
 from app.infrastructure.auth.exceptions import AuthenticationError
 from app.infrastructure.exceptions.gateway import DataMapperError
 from app.presentation.http.auth.fastapi_openapi_markers import cookie_scheme
@@ -24,13 +21,12 @@ from app.presentation.http.errors.translators import (
     ServiceUnavailableTranslator,
 )
 
-
-def create_activate_user_router() -> APIRouter:
+def toggle_challenge_status_router() -> APIRouter:
     router = ErrorAwareRouter()
 
     @router.patch(
-        "/{username}/activate",
-        description=getdoc(ActivateUserInteractor),
+        "/{challenge_id}/toggle-status",
+        description=getdoc(ToggleChallengeStatusInteractor),
         error_map={
             AuthenticationError: status.HTTP_401_UNAUTHORIZED,
             DataMapperError: rule(
@@ -39,20 +35,22 @@ def create_activate_user_router() -> APIRouter:
                 on_error=log_error,
             ),
             AuthorizationError: status.HTTP_403_FORBIDDEN,
-            DomainFieldError: status.HTTP_400_BAD_REQUEST,
-            UserNotFoundByUsernameError: status.HTTP_404_NOT_FOUND,
-            ActivationChangeNotPermittedError: status.HTTP_403_FORBIDDEN,
+            DomainError: status.HTTP_400_BAD_REQUEST,
         },
         default_on_error=log_info,
-        status_code=status.HTTP_204_NO_CONTENT,
+        status_code=status.HTTP_201_CREATED,
         dependencies=[Security(cookie_scheme)],
     )
     @inject
-    async def activate_user(
-        username: Annotated[str, Path()],
-        interactor: FromDishka[ActivateUserInteractor],
+    async def toggle_challenge_status(
+        challenge_id: Annotated[str, Path()],
+        status: Annotated[Status, Body()],
+        interactor: FromDishka[ToggleChallengeStatusInteractor],
     ) -> None:
-        request_data = ActivateUserRequest(username)
-        await interactor.execute(request_data)
+        request_data = ToggleChallengeStatusRequest(
+            challenge_id=challenge_id,
+            status=status,
+        )
+        return await interactor.execute(request_data)
 
     return router

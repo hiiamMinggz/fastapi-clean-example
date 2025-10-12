@@ -6,7 +6,7 @@ from dishka.integrations.fastapi import inject
 from fastapi import APIRouter, Path, Security, status
 from fastapi_error_map import ErrorAwareRouter, rule
 
-from app.application.commands.deactivate_user import (
+from app.application.commands.user.deactivate_user import (
     DeactivateUserInteractor,
     DeactivateUserRequest,
 )

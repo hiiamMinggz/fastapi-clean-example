@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from functools import total_ordering
-from typing import ClassVar, Final
+from typing import ClassVar, Final, Optional
 
 from app.domain.exceptions.base import DomainFieldError
 from app.domain.value_objects.base import ValueObject
@@ -58,18 +58,49 @@ class ExpiresAt(Time):
 class AcceptedAt(Time):
     """raises DomainFieldError"""
 
-    value: datetime
+    value: Optional[datetime] = None
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
-        super(AcceptedAt, self).__post_init__()
+        if self.value is not None:
+            super(AcceptedAt, self).__post_init__()
+            
+    def _validate_time_type(self, time_value: Optional[datetime]) -> None:
+        if time_value is not None and not isinstance(time_value, datetime):
+            raise DomainFieldError(
+                f"Time must be a datetime or None, but got {type(time_value)}.",
+            )
         
 @dataclass(frozen=True, slots=True, repr=False)
 class UpdatedAt(Time):
     """raises DomainFieldError"""
 
-    value: datetime
+    value: Optional[datetime] = None
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
-        super(UpdatedAt, self).__post_init__()
+        if self.value is not None:
+            super(UpdatedAt, self).__post_init__()
+            
+    def _validate_time_type(self, time_value: Optional[datetime]) -> None:
+        if time_value is not None and not isinstance(time_value, datetime):
+            raise DomainFieldError(
+                f"Time must be a datetime or None, but got {type(time_value)}.",
+            )
+
+@dataclass(frozen=True, slots=True, repr=False)
+class DeletedAt(Time):
+    """raises DomainFieldError"""
+
+    value: Optional[datetime] = None
+
+    def __post_init__(self) -> None:
+        """:raises DomainFieldError:"""
+        if self.value is not None:
+            super(DeletedAt, self).__post_init__()
+            
+    def _validate_time_type(self, time_value: Optional[datetime]) -> None:
+        if time_value is not None and not isinstance(time_value, datetime):
+            raise DomainFieldError(
+                f"Time must be a datetime or None, but got {type(time_value)}.",
+            )

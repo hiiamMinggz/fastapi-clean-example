@@ -6,7 +6,7 @@ from fastapi import APIRouter, Security, status
 from fastapi_error_map import ErrorAwareRouter, rule
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.application.commands.create_user import (
+from app.application.commands.user.create_user import (
     CreateUserInteractor,
     CreateUserRequest,
     CreateUserResponse,

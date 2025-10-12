@@ -1,13 +1,12 @@
 from app.domain.entities.challenge import Challenge
 from app.domain.value_objects.text import Title, Description
 from app.domain.value_objects.token import ChallengeAmount, StreamerChallengeFixedAmount
-from app.domain.value_objects.time import CreatedAt, ExpiresAt, AcceptedAt
+from app.domain.value_objects.time import CreatedAt, ExpiresAt, AcceptedAt, UpdatedAt
 from app.domain.value_objects.id import UserId, ChallengeId
 from app.domain.enums.fee import Fee
 from app.domain.enums.challenge_status import Status
 from app.domain.ports.id_generator import IdGenerator
 from app.domain.exceptions.base import DomainError
-from typing import Optional
 
 
 class ChallengeService:
@@ -26,8 +25,7 @@ class ChallengeService:
             status: Status,
             created_at: CreatedAt,
             expires_at: ExpiresAt,
-            accepted_at: AcceptedAt,
-        ) -> Challenge:
+         ) -> Challenge:
         
         challenge_id = ChallengeId(self.challenge_id_generator())
         challenge = Challenge(
@@ -42,7 +40,6 @@ class ChallengeService:
             status=status,
             created_at=created_at,
             expires_at=expires_at,
-            accepted_at=accepted_at,
         )
         return challenge
 
@@ -52,10 +49,12 @@ class ChallengeService:
         *,
         title: Title,
         description: Description,
+        updated_at: UpdatedAt,
     ) -> None:
         if challenge.status == Status.PENDING:
             challenge.title = title
             challenge.description = description
+            challenge.updated_at = updated_at
         else:
             raise DomainError(
                 "Challenge title can only be updated for PENDING challenges"
@@ -66,22 +65,26 @@ class ChallengeService:
         challenge: Challenge,
         *,
         amount: ChallengeAmount,
+        updated_at: UpdatedAt,
     ) -> None:
         if challenge.status not in {Status.PENDING, Status.ACCEPTED}:
             raise DomainError(
                 "Challenge amount can only be updated for PENDING or ACCEPTED challenges"
             )
-        if amount <= challenge.amount:
-            raise DomainError(
-                f"New challenge amount ({amount}) must be greater than current amount ({challenge.amount})"
-            )
+        if challenge.status == Status.ACCEPTED:
+            if amount <= challenge.amount:
+                raise DomainError(
+                    f"New challenge amount ({amount}) must be greater than current amount ({challenge.amount})"
+                )
         challenge.amount = amount
+        challenge.updated_at = updated_at
         
     def extend_challenge_deadline(
         self,
         challenge: Challenge,
         *,
         expires_at: ExpiresAt,
+        updated_at: UpdatedAt,
     ) -> None:
         if challenge.status not in {Status.PENDING, Status.ACCEPTED}:
             raise DomainError(
@@ -92,45 +95,51 @@ class ChallengeService:
                 f"New expiration time ({expires_at}) must be later than current expiration time ({challenge.expires_at})"
             )
         challenge.expires_at = expires_at
+        challenge.updated_at = updated_at
 
-    def accept_challenge(self, challenge: Challenge) -> None:
+    def accept_challenge(self, challenge: Challenge, accepted_at: AcceptedAt) -> None:
         if challenge.status != Status.PENDING:
             raise DomainError(
                 "Challenge can only be ACCEPTED for PENDING challenges"
             )
         challenge.status = Status.ACCEPTED
+        challenge.accepted_at = accepted_at
 
-    def streamer_reject_challenge(self, challenge: Challenge) -> None:
+    def streamer_reject_challenge(self, challenge: Challenge, updated_at: UpdatedAt) -> None:
         if challenge.status != Status.PENDING:
             raise DomainError(
                 "Challenge can only be REJECTED by the Streamer for PENDING challenges"
             )
         challenge.status = Status.STREAMER_REJECTED
-
-    def viewer_reject_challenge(self, challenge: Challenge) -> None:
+        challenge.updated_at = updated_at
+    def viewer_reject_challenge(self, challenge: Challenge, updated_at: UpdatedAt) -> None:
         if challenge.status not in {Status.PENDING, Status.ACCEPTED}:
             raise DomainError(
                 "Challenge can only be REJECTED by the Viewer for PENDING or ACCEPTED challenges"
             )
         challenge.status = Status.VIEWER_REJECTED
+        challenge.updated_at = updated_at
         
-    def streamer_complete_challenge(self, challenge: Challenge) -> None:
+    def streamer_complete_challenge(self, challenge: Challenge, updated_at: UpdatedAt) -> None:
         if challenge.status != Status.ACCEPTED:
             raise DomainError(
                 "Challenge can only be marked as COMPLETED by the Streamer for ACCEPTED challenges"
             )
         challenge.status = Status.STREAMER_COMPLETED
+        challenge.updated_at = updated_at
         
-    def viewer_confirm_challenge(self, challenge: Challenge) -> None:
+    def viewer_confirm_challenge(self, challenge: Challenge, updated_at: UpdatedAt) -> None:
         if challenge.status not in {Status.STREAMER_COMPLETED, Status.ACCEPTED}:
             raise DomainError(
                 "Challenge can only be marked as COMPLETED by the Streamer for ACCEPTED or STREAMER_COMPLETED challenges"
             )
         challenge.status = Status.VIEWER_CONFIRMED
+        challenge.updated_at = updated_at
 
-    def done_challenge(self, challenge: Challenge) -> None:
+    def done_challenge(self, challenge: Challenge, updated_at: UpdatedAt) -> None:
         if challenge.status != Status.VIEWER_CONFIRMED:
             raise DomainError(
                 "Challenge can only be marked as DONE for VIEWER_CONFIRMED challenges"
             )
         challenge.status = Status.DONE
+        challenge.updated_at = updated_at

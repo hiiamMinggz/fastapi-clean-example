@@ -6,7 +6,7 @@ from dishka.integrations.fastapi import inject
 from fastapi import APIRouter, Path, Security, status
 from fastapi_error_map import ErrorAwareRouter, rule
 
-from app.application.commands.grant_streamer import (
+from app.application.commands.user.grant_streamer import (
     GrantStreamerInteractor,
     GrantStreamerRequest,
 )

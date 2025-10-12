@@ -8,9 +8,8 @@ from app.application.common.ports.challenge_command_gateway import ChallengeComm
 from app.application.common.services.authorization.authorize import (
     authorize,
 )
-from app.application.common.services.authorization.composite import AnyOf
 from app.application.common.services.authorization.permissions import (
-    CanExtendChallengeDeadline,
+    CanChangeChallengeStatus,
     ChallengeManagementContext,
 )
 from app.application.common.services.current_user import CurrentUserService
@@ -18,23 +17,22 @@ from app.domain.entities.challenge import Challenge
 from app.domain.exceptions.base import DomainError
 from app.domain.exceptions.challenge import ChallengeNotFoundByIdError
 from app.domain.services.challenge import ChallengeService
-from app.domain.value_objects.text import Title, Description
 from app.domain.value_objects.id import ChallengeId
-from datetime import datetime
+from app.domain.enums.challenge_status import Status
 from uuid import UUID
+from datetime import datetime, timezone
 
-from app.domain.value_objects.time import ExpiresAt
-
+from app.domain.value_objects.time import AcceptedAt, UpdatedAt
 log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
-class ExtendChallengeDeadlineRequest:
+class ToggleChallengeStatusRequest:
     challenge_id: UUID
-    expires_at: datetime
+    status: Status
 
 
-class ExtendChallengeDeadlineInteractor:
+class ToggleChallengeStatusInteractor:
     def __init__(
         self,
         current_user_service: CurrentUserService,
@@ -47,7 +45,7 @@ class ExtendChallengeDeadlineInteractor:
         self._challenge_service = challenge_service
         self._transaction_manager = transaction_manager
 
-    async def execute(self, request_data: ExtendChallengeDeadlineRequest) -> None:
+    async def execute(self, request_data: ToggleChallengeStatusRequest) -> None:
         """
         :raises AuthenticationError: If the current user is not authenticated
         :raises DataMapperError: If there's an error accessing the database
@@ -56,14 +54,14 @@ class ExtendChallengeDeadlineInteractor:
         :raises DomainFieldError: If the title or description is invalid
         """
         log.info(
-            "Extend challenge deadline: started. Challenge ID: %s",
+            "Toggle challenge status: started. Challenge ID: %s",
             request_data.challenge_id,
         )
 
         current_user = await self._current_user_service.get_current_user()
         
         challenge_id = ChallengeId(request_data.challenge_id)
-        new_expires_at = ExpiresAt(request_data.expires_at)
+        new_status = request_data.status
         
         challenge: Challenge | None = await self._challenge_command_gateway.read_by_id(challenge_id)
         if challenge is None:
@@ -71,22 +69,44 @@ class ExtendChallengeDeadlineInteractor:
 
         # Authorize: can only update challenges created by the current user
         authorize(
-            CanExtendChallengeDeadline(),
+            CanChangeChallengeStatus(),
             context=ChallengeManagementContext(
                 subject=current_user,
                 challenge=challenge,
             ),
         )
+        now = datetime.now(timezone.utc)
 
-        self._challenge_service.extend_challenge_deadline(
-            challenge=challenge,
-            expires_at=new_expires_at,
-        )
+        if new_status == Status.ACCEPTED:
+            self._challenge_service.accept_challenge(
+                challenge=challenge,
+                accepted_at=AcceptedAt(now),
+            )
+        elif new_status == Status.STREAMER_REJECTED:
+            self._challenge_service.streamer_reject_challenge(
+                challenge=challenge,
+                updated_at=UpdatedAt(now),
+            )
+        elif new_status == Status.VIEWER_REJECTED:
+            self._challenge_service.viewer_reject_challenge(
+                challenge=challenge,
+                updated_at=UpdatedAt(now),
+            )
+        elif new_status == Status.STREAMER_COMPLETED:
+            self._challenge_service.streamer_complete_challenge(
+                challenge=challenge,
+                updated_at=UpdatedAt(now),
+            )
+        elif new_status == Status.VIEWER_CONFIRMED:
+            self._challenge_service.viewer_confirm_challenge(
+                challenge=challenge,
+                updated_at=UpdatedAt(now),
+            )
 
         await self._challenge_command_gateway.update_by_id(challenge_id, challenge)
         await self._transaction_manager.commit()
 
         log.info(
-            "Extend challenge deadline done. Challenge ID: %s",
+            "Toggle challenge status: done. Challenge ID: %s",
             challenge_id,
         )

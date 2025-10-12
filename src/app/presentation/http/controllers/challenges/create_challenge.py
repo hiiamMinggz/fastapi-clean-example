@@ -4,7 +4,7 @@ from dishka.integrations.fastapi import inject
 from fastapi import APIRouter, Security, status
 from fastapi_error_map import ErrorAwareRouter, rule
 
-from app.application.commands.create_challenge import (
+from app.application.commands.challenge.create_challenge import (
     CreateChallengeInteractor,
     CreateChallengeRequest,
     CreateChallengeResponse,
@@ -19,7 +19,7 @@ from app.presentation.http.errors.translators import (
     ServiceUnavailableTranslator,
 )
 
-def create_create_challenge_router() -> APIRouter:
+def create_challenge_router() -> APIRouter:
     router = ErrorAwareRouter()
 
     @router.post(
@@ -41,16 +41,16 @@ def create_create_challenge_router() -> APIRouter:
     )
     @inject
     async def create_challenge(
-        request_data_pydantic: CreateChallengeRequest,
+        request_data: CreateChallengeRequest,
         interactor: FromDishka[CreateChallengeInteractor],
     ) -> CreateChallengeResponse:
         request_data = CreateChallengeRequest(
-            title=request_data_pydantic.title,
-            description=request_data_pydantic.description,
-            created_by=request_data_pydantic.created_by,
-            assigned_to=request_data_pydantic.assigned_to,
-            amount=request_data_pydantic.amount,
-            expires_at=request_data_pydantic.expires_at,
+            title=request_data.title,
+            description=request_data.description,
+            created_by=request_data.created_by,
+            assigned_to=request_data.assigned_to,
+            amount=request_data.amount,
+            expires_at=request_data.expires_at,
         )
         return await interactor.execute(request_data)
 

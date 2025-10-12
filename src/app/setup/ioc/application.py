@@ -1,12 +1,14 @@
+from app.application.commands.challenge.toggle_challenge_status import ToggleChallengeStatusInteractor
 from dishka import Provider, Scope, provide, provide_all
 
-from app.application.commands.activate_user import ActivateUserInteractor
-from app.application.commands.change_password import ChangePasswordInteractor
-from app.application.commands.create_challenge import CreateChallengeInteractor
-from app.application.commands.create_user import CreateUserInteractor
-from app.application.commands.deactivate_user import DeactivateUserInteractor
-from app.application.commands.grant_streamer import GrantStreamerInteractor
-from app.application.commands.revoke_admin import RevokeStreamerInteractor
+from app.application.commands.user.activate_user import ActivateUserInteractor
+from app.application.commands.user.change_password import ChangePasswordInteractor
+from app.application.commands.challenge.create_challenge import CreateChallengeInteractor
+from app.application.commands.challenge.update_challenge import UpdateChallengeInteractor
+from app.application.commands.user.create_user import CreateUserInteractor
+from app.application.commands.user.deactivate_user import DeactivateUserInteractor
+from app.application.commands.user.grant_streamer import GrantStreamerInteractor
+from app.application.commands.user.revoke_admin import RevokeStreamerInteractor
 from app.application.common.ports.access_revoker import AccessRevoker
 from app.application.common.ports.challenge_command_gateway import ChallengeCommandGateway
 from app.application.common.ports.flusher import Flusher
@@ -92,6 +94,8 @@ class ApplicationProvider(Provider):
         GrantStreamerInteractor,
         RevokeStreamerInteractor,
         CreateChallengeInteractor,
+        UpdateChallengeInteractor,
+        ToggleChallengeStatusInteractor,
     )
 
     # Queries

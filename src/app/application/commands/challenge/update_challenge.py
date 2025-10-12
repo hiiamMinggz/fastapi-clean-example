@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+from decimal import Decimal
 import logging
 from dataclasses import dataclass
 
@@ -10,7 +12,9 @@ from app.application.common.services.authorization.authorize import (
 )
 from app.application.common.services.authorization.composite import AnyOf
 from app.application.common.services.authorization.permissions import (
+    CanExtendChallengeDeadline,
     CanUpdateChallengeAmount,
+    CanUpdateChallengeContent,
     ChallengeManagementContext,
 )
 from app.application.common.services.current_user import CurrentUserService
@@ -23,18 +27,21 @@ from app.domain.value_objects.id import ChallengeId
 from typing import Optional
 from uuid import UUID
 
+from app.domain.value_objects.time import ExpiresAt, UpdatedAt
 from app.domain.value_objects.token import ChallengeAmount
 
 log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
-class UpdateChallengeAmountRequest:
+class UpdateChallengeRequest:
     challenge_id: UUID
-    amount: str
+    title: Optional[str]
+    description: Optional[str]
+    amount: Optional[Decimal]
+    expires_at: Optional[datetime]
 
-
-class UpdateChallengeAmountInteractor:
+class UpdateChallengeInteractor:
     def __init__(
         self,
         current_user_service: CurrentUserService,
@@ -47,7 +54,7 @@ class UpdateChallengeAmountInteractor:
         self._challenge_service = challenge_service
         self._transaction_manager = transaction_manager
 
-    async def execute(self, request_data: UpdateChallengeAmountRequest) -> None:
+    async def execute(self, request_data: UpdateChallengeRequest) -> None:
         """
         :raises AuthenticationError: If the current user is not authenticated
         :raises DataMapperError: If there's an error accessing the database
@@ -56,37 +63,66 @@ class UpdateChallengeAmountInteractor:
         :raises DomainFieldError: If the title or description is invalid
         """
         log.info(
-            "Update challenge amount: started. Challenge ID: %s",
+            "Update challenge: started. Challenge ID: %s",
             request_data.challenge_id,
         )
-
-        current_user = await self._current_user_service.get_current_user()
-        
         challenge_id = ChallengeId(request_data.challenge_id)
-        new_amount = ChallengeAmount(request_data.amount)
-        
+        current_user = await self._current_user_service.get_current_user()
         challenge: Challenge | None = await self._challenge_command_gateway.read_by_id(challenge_id)
         if challenge is None:
             raise ChallengeNotFoundByIdError()
-
-        # Authorize: can only update challenges created by the current user
-        authorize(
-            CanUpdateChallengeAmount(),
-            context=ChallengeManagementContext(
-                subject=current_user,
+        
+        now = UpdatedAt(datetime.now(timezone.utc))
+        if request_data.title is not None:
+            authorize(
+                CanUpdateChallengeContent(),
+                context=ChallengeManagementContext(
+                    subject=current_user,
+                    challenge=challenge,
+                ),
+            )
+            new_title = Title(request_data.title)
+            new_description = Description(request_data.description)
+            
+            self._challenge_service.update_challenge_content(
                 challenge=challenge,
-            ),
-        )
-
-        self._challenge_service.update_challenge_amount(
-            challenge=challenge,
-            amount=new_amount,
-        )
-
+                title=new_title,
+                description=new_description,
+                updated_at=now,
+            )
+        if request_data.amount is not None:
+            authorize(
+                CanUpdateChallengeAmount(),
+                context=ChallengeManagementContext(
+                    subject=current_user,
+                    challenge=challenge,
+                ),
+            )
+            new_amount = ChallengeAmount(request_data.amount)
+            self._challenge_service.update_challenge_amount(
+                challenge=challenge,
+                amount=new_amount,
+                updated_at=now,
+            )
+        if request_data.expires_at is not None:
+            authorize(
+                CanExtendChallengeDeadline(),
+                context=ChallengeManagementContext(
+                    subject=current_user,
+                    challenge=challenge,
+                ),
+            )
+            new_expires_at = ExpiresAt(request_data.expires_at)
+            self._challenge_service.extend_challenge_deadline(
+                challenge=challenge,
+                expires_at=new_expires_at,
+                updated_at=now,
+            )
+        
         await self._challenge_command_gateway.update_by_id(challenge_id, challenge)
         await self._transaction_manager.commit()
 
         log.info(
-            "Update challenge amount: done. Challenge ID: %s",
+            "Update challenge: done. Challenge ID: %s",
             challenge_id,
         )

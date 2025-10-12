@@ -111,7 +111,6 @@ class CreateChallengeInteractor:
             status=status,
             created_at=created_at,
             expires_at=expires_at,
-            accepted_at=None,
         )
 
         self._challenge_command_gateway.add(challenge)
