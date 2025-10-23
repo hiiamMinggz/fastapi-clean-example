@@ -1,3 +1,4 @@
+from datetime import timedelta
 from app.domain.entities.base import Entity
 from app.domain.enums.challenge_status import Status
 from app.domain.enums.fee import Fee
@@ -58,4 +59,7 @@ class Challenge(Entity[ChallengeId]):
         if self.created_by == self.assigned_to:
             raise DomainError(
                 f"Challenge creator cannot be the same as assignee",
-            )
+            )  
+    @property
+    def _duration(self) -> timedelta:
+        return self.expires_at.value - self.created_at.value

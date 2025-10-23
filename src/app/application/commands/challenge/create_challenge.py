@@ -12,19 +12,19 @@ from app.application.common.ports.transaction_manager import (
 from app.application.common.ports.challenge_command_gateway import ChallengeCommandGateway
 
 from app.application.common.ports.user_command_gateway import UserCommandGateway
+from app.application.common.ports.wallet_command_gateway import WalletCommandGateway
 from app.application.common.services.current_user import CurrentUserService
-from app.domain.entities.streamer_profile import StreamerProfile
-from app.domain.entities.user import User
+
 from app.domain.enums.fee import Fee
 from app.domain.enums.challenge_status import Status
 from app.domain.enums.user_role import UserRole
 from app.domain.exceptions.base import DomainError
-from app.domain.exceptions.user import UsernameAlreadyExistsError
 from app.domain.services.challenge import ChallengeService
+from app.domain.services.wallet import WalletService
 from app.domain.value_objects.text import Title, Description
 from app.domain.value_objects.id import UserId
-from app.domain.value_objects.token import ChallengeAmount, StreamerChallengeFixedAmount
-from app.domain.value_objects.time import CreatedAt, ExpiresAt, AcceptedAt
+from app.domain.value_objects.token import ChallengeAmount
+from app.domain.value_objects.time import CreatedAt, ExpiresAt
 
 log = logging.getLogger(__name__)
 
@@ -55,17 +55,21 @@ class CreateChallengeInteractor:
         self,
         current_user_service: CurrentUserService,
         challenge_service: ChallengeService,
+        wallet_service: WalletService,
         challenge_command_gateway: ChallengeCommandGateway,
         streamer_profile_gateway: StreamerProfileCommandGateway,
+        wallet_command_gateway: WalletCommandGateway,
         user_command_gateway: UserCommandGateway,
         flusher: Flusher,
         transaction_manager: TransactionManager,
     ):
         self._current_user_service = current_user_service
         self._challenge_service = challenge_service
+        self._wallet_service = wallet_service
         self._challenge_command_gateway = challenge_command_gateway
         self._streamer_profile_gateway = streamer_profile_gateway
         self._user_command_gateway = user_command_gateway
+        self._wallet_command_gateway = wallet_command_gateway
         self._flusher = flusher
         self._transaction_manager = transaction_manager
 
@@ -94,7 +98,6 @@ class CreateChallengeInteractor:
         created_by = UserId(request_data.created_by)
         amount = ChallengeAmount(Decimal(request_data.amount))
         fee = Fee.CHALLENGE_FEE
-        
         streamer_fixed_amount = streamer_profile.min_amount_challenge
         status = Status.PENDING  # Always PENDING when created
         created_at = CreatedAt(now)
@@ -111,6 +114,14 @@ class CreateChallengeInteractor:
             status=status,
             created_at=created_at,
             expires_at=expires_at,
+        )
+        #TODO: transfer amount from creator's wallet to HOLDER wallet
+        current_user = await self._current_user_service.get_current_user()
+        holder = ...
+        self._wallet_service.transfer(
+            from_wallet=await self._wallet_command_gateway.read_by_id(current_user.id_),
+            to_wallet=await self._wallet_command_gateway.read_by_id(holder.id_),
+            amount=amount,
         )
 
         self._challenge_command_gateway.add(challenge)

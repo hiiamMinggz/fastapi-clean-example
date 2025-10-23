@@ -34,7 +34,6 @@ users_table = Table(
         nullable=False,
     ),
     Column("credibility", DOUBLE_PRECISION, default=5.0, nullable=False),
-    Column("balance", NUMERIC(12, 2), default=0, nullable=False),
     Column("created_at", DateTime(timezone=True), nullable=False),
     Column("updated_at", DateTime(timezone=True), nullable=False),
 )
@@ -53,7 +52,6 @@ def map_users_table() -> None:
             "locked": users_table.c.locked,
             "status": users_table.c.status,
             "credibility": composite(Credibility, users_table.c.credibility),
-            "balance": composite(Balance, users_table.c.balance),
             "created_at": composite(CreatedAt, users_table.c.created_at),
             "updated_at": composite(UpdatedAt, users_table.c.updated_at),
         },

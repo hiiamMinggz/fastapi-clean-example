@@ -27,6 +27,16 @@ class Token(ValueObject):
         if not isinstance(other, Token):
             return NotImplemented
         return self.value < other.value
+    
+    def __add__(self, other: object):
+        if not isinstance(other, Token):
+            return NotImplemented
+        return self.__class__(self.value + other.value)
+    
+    def __sub__(self, other: object):
+        if not isinstance(other, Token):
+            return NotImplemented
+        return self.__class__(self.value - other.value)
 
     def _validate_token_type(self, token_value: Decimal) -> None:
         if not isinstance(token_value, Decimal):
@@ -51,7 +61,6 @@ class Balance(Token):
             raise DomainFieldError(
                 f"Balance must be greater than or equal to {self.ZERO}, but got {balance_value}.",
             )
-    
 @dataclass(frozen=True, slots=True, repr=False)
 class ChallengeAmount(Token):
     """raises DomainFieldError"""

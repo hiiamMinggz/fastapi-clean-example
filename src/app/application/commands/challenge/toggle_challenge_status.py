@@ -82,23 +82,51 @@ class ToggleChallengeStatusInteractor:
                 challenge=challenge,
                 accepted_at=AcceptedAt(now),
             )
+            #TODO: Add token hold logic here
         elif new_status == Status.STREAMER_REJECTED:
             self._challenge_service.streamer_reject_challenge(
                 challenge=challenge,
                 updated_at=UpdatedAt(now),
             )
+            #TODO: Add token refund logic here
         elif new_status == Status.VIEWER_REJECTED:
             self._challenge_service.viewer_reject_challenge(
                 challenge=challenge,
                 updated_at=UpdatedAt(now),
             )
+            current_duration = now - challenge.created_at.value
+            if current_duration < challenge._duration * 0.3: 
+                #TODO: Add refund logic here if rejected within 30% of challenge duration
+                self._challenge_service.done_challenge(
+                    challenge=challenge,
+                    updated_at=UpdatedAt(now),
+                )
+            elif current_duration >= challenge._duration:
+                #TODO: add token refund logic here if rejected after challenge duration
+                self._challenge_service.done_challenge(
+                    challenge=challenge,
+                    updated_at=UpdatedAt(now),
+                )
+            else:
+                #TODO: add token refund logic here if rejected within 30% of challenge duration
+                self._challenge_service.done_challenge(
+                    challenge=challenge,
+                    updated_at=UpdatedAt(now),
+                )
         elif new_status == Status.STREAMER_COMPLETED:
             self._challenge_service.streamer_complete_challenge(
                 challenge=challenge,
                 updated_at=UpdatedAt(now),
             )
+            #TODO: Add notification to viewer to confirm challenge
+            
         elif new_status == Status.VIEWER_CONFIRMED:
             self._challenge_service.viewer_confirm_challenge(
+                challenge=challenge,
+                updated_at=UpdatedAt(now),
+            )
+            #TODO: Add token distribution logic here
+            self._challenge_service.done_challenge(
                 challenge=challenge,
                 updated_at=UpdatedAt(now),
             )

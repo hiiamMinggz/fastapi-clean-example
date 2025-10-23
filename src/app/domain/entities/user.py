@@ -21,7 +21,6 @@ class User(Entity[UserId]):
         locked: bool,
         status: UserStatus,
         credibility: Credibility,
-        balance: Balance,
         created_at: CreatedAt,
         updated_at: UpdatedAt,
     ) -> None:
@@ -33,6 +32,5 @@ class User(Entity[UserId]):
         self.locked = locked
         self.status = status
         self.credibility = credibility
-        self.balance = balance
         self.created_at = created_at
         self.updated_at = updated_at

@@ -35,7 +35,6 @@ class UserService:
         user_type = UserRole.VIEWER
         staus = UserStatus.ACTIVE
         inited_credibility = Credibility(Credibility.MAX_CREDIBILITY)
-        inited_balance = Balance(Balance.ZERO)
         
         now = datetime.now(timezone.utc)
         created_at = CreatedAt(now)
@@ -50,7 +49,6 @@ class UserService:
             locked=False,
             status=staus,
             credibility=inited_credibility,
-            balance=inited_balance,
             created_at=created_at,
             updated_at=updated_at,
         )
@@ -67,7 +65,6 @@ class UserService:
         user_type = UserRole.STREAMER
         status = UserStatus.PENDING
         inited_credibility = Credibility(Credibility.MAX_CREDIBILITY)
-        inited_balance = Balance(Balance.ZERO)
         
         now = datetime.now(timezone.utc)
         created_at = CreatedAt(now)
@@ -82,7 +79,6 @@ class UserService:
             locked=False,
             status=status,
             credibility=inited_credibility,
-            balance=inited_balance,
             created_at=created_at,
             updated_at=updated_at,
         )
