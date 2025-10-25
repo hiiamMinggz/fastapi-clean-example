@@ -83,8 +83,6 @@ class CreateChallengeInteractor:
         """
         log.info("Create challenge: started.")
 
-        now = datetime.now(timezone.utc)
-
         #check assigned_to is a valid streamer
         streamer_id = UserId(request_data.assigned_to)
         streamer = await self._user_command_gateway.read_by_id(streamer_id)
@@ -97,10 +95,7 @@ class CreateChallengeInteractor:
         description = Description(request_data.description)
         created_by = UserId(request_data.created_by)
         amount = ChallengeAmount(Decimal(request_data.amount))
-        fee = Fee.CHALLENGE_FEE
         streamer_fixed_amount = streamer_profile.min_amount_challenge
-        status = Status.PENDING  # Always PENDING when created
-        created_at = CreatedAt(now)
         expires_at = ExpiresAt(request_data.expires_at)
 
         challenge = self._challenge_service.create_challenge(
@@ -109,18 +104,16 @@ class CreateChallengeInteractor:
             created_by=created_by,
             assigned_to=streamer_id,
             amount=amount,
-            fee=fee,
             streamer_fixed_amount=streamer_fixed_amount,
-            status=status,
-            created_at=created_at,
             expires_at=expires_at,
         )
         #TODO: transfer amount from creator's wallet to HOLDER wallet
         current_user = await self._current_user_service.get_current_user()
-        holder = ...
+        current_user_wallet = await self._wallet_command_gateway.read_by_id(current_user.id_)
+        
         self._wallet_service.transfer(
-            from_wallet=await self._wallet_command_gateway.read_by_id(current_user.id_),
-            to_wallet=await self._wallet_command_gateway.read_by_id(holder.id_),
+            from_wallet=current_user_wallet,
+            to_wallet=..., # HOLDER wallet
             amount=amount,
         )
 

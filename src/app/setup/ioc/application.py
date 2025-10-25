@@ -8,7 +8,7 @@ from app.application.commands.challenge.update_challenge import UpdateChallengeI
 from app.application.commands.user.create_user import CreateUserInteractor
 from app.application.commands.user.deactivate_user import DeactivateUserInteractor
 from app.application.commands.user.grant_streamer import GrantStreamerInteractor
-from app.application.commands.user.revoke_admin import RevokeStreamerInteractor
+from app.application.commands.user.revoke_streamer import RevokeStreamerInteractor
 from app.application.common.ports.access_revoker import AccessRevoker
 from app.application.common.ports.challenge_command_gateway import ChallengeCommandGateway
 from app.application.common.ports.flusher import Flusher

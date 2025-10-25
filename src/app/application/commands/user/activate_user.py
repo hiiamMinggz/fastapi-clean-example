@@ -68,7 +68,7 @@ class ActivateUserInteractor:
             CanManageRole(),
             context=RoleManagementContext(
                 subject=current_user,
-                target_role=UserRole.USER,
+                target_role=UserRole.VIEWER,
             ),
         )
 
@@ -88,7 +88,7 @@ class ActivateUserInteractor:
             ),
         )
 
-        self._user_service.toggle_user_activation(user, is_active=True)
+        self._user_service.toggle_user_activation(user, locked=False)
         await self._transaction_manager.commit()
 
         log.info(

@@ -34,7 +34,7 @@ class CreateUserRequest:
     username: str
     email: str
     password: str
-    user_type: UserRole  # Changed from role to user_type for consistency
+    user_type: UserRole
 
 
 class CreateUserResponse(TypedDict):
@@ -76,25 +76,18 @@ class CreateUserInteractor:
             request_data.email,
         )
 
-        # Create value objects
         username = Username(request_data.username)
         email = Email(request_data.email)
         password = RawPassword(request_data.password)
-        created_at = CreatedAt.now()
-        updated_at = UpdatedAt.now()
 
         user = self._user_service.create_viewer(
             username=username,
             email=email,
             raw_password=password,
             user_type=request_data.user_type,
-            created_at=created_at,
-            updated_at=updated_at,
         )
         wallet = self._wallet_service.create_wallet(
             user_id=user.id_,
-            created_at=created_at,
-            updated_at=updated_at,
         )
         self._user_command_gateway.add(user)
         self._wallet_command_gateway.add(wallet)

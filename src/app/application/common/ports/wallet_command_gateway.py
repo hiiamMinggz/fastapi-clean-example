@@ -13,5 +13,6 @@ class WalletCommandGateway(Protocol):
     @abstractmethod
     async def read_by_id(self, wallet_id: UserId) -> Wallet | None:
         """:raises DataMapperError:"""
-
-
+    @abstractmethod
+    async def update_by_id(self, wallet_id: UserId, wallet: Wallet) -> None:
+        """:raises DataMapperError:"""

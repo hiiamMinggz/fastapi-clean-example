@@ -73,7 +73,7 @@ class DeactivateUserInteractor:
             CanManageRole(),
             context=RoleManagementContext(
                 subject=current_user,
-                target_role=UserRole.USER,
+                target_role=UserRole.VIEWER,
             ),
         )
 
@@ -93,7 +93,7 @@ class DeactivateUserInteractor:
             ),
         )
 
-        self._user_service.toggle_user_activation(user, is_active=False)
+        self._user_service.toggle_user_activation(user, locked=True)
         await self._transaction_manager.commit()
         await self._access_revoker.remove_all_user_access(user.id_)
 

@@ -61,5 +61,5 @@ class Challenge(Entity[ChallengeId]):
                 f"Challenge creator cannot be the same as assignee",
             )  
     @property
-    def _duration(self) -> timedelta:
+    def duration(self) -> timedelta:
         return self.expires_at.value - self.created_at.value

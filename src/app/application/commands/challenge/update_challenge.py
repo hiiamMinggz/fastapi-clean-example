@@ -72,7 +72,6 @@ class UpdateChallengeInteractor:
         if challenge is None:
             raise ChallengeNotFoundByIdError()
         
-        now = UpdatedAt(datetime.now(timezone.utc))
         if request_data.title is not None:
             authorize(
                 CanUpdateChallengeContent(),
@@ -88,7 +87,6 @@ class UpdateChallengeInteractor:
                 challenge=challenge,
                 title=new_title,
                 description=new_description,
-                updated_at=now,
             )
         if request_data.amount is not None:
             authorize(
@@ -102,7 +100,6 @@ class UpdateChallengeInteractor:
             self._challenge_service.update_challenge_amount(
                 challenge=challenge,
                 amount=new_amount,
-                updated_at=now,
             )
         if request_data.expires_at is not None:
             authorize(
@@ -116,7 +113,6 @@ class UpdateChallengeInteractor:
             self._challenge_service.extend_challenge_deadline(
                 challenge=challenge,
                 expires_at=new_expires_at,
-                updated_at=now,
             )
         
         await self._challenge_command_gateway.update_by_id(challenge_id, challenge)

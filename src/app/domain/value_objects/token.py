@@ -37,6 +37,12 @@ class Token(ValueObject):
         if not isinstance(other, Token):
             return NotImplemented
         return self.__class__(self.value - other.value)
+    
+    def __mul__(self, scalar: Decimal):
+        if not isinstance(scalar, Decimal):
+            return NotImplemented
+        return self.__class__(self.value * scalar)
+        
 
     def _validate_token_type(self, token_value: Decimal) -> None:
         if not isinstance(token_value, Decimal):

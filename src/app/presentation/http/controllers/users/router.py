@@ -12,11 +12,11 @@ from app.presentation.http.controllers.users.create_user import (
 from app.presentation.http.controllers.users.deactivate_user import (
     create_deactivate_user_router,
 )
-from app.presentation.http.controllers.users.grant_admin import (
+from app.presentation.http.controllers.users.grant_streamer import (
     create_grant_streamer_router,
 )
 from app.presentation.http.controllers.users.list_users import create_list_users_router
-from app.presentation.http.controllers.users.revoke_admin import (
+from app.presentation.http.controllers.users.revoke_streamer import (
     create_revoke_streamer_router,
 )
 
