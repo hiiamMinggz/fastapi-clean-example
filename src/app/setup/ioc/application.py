@@ -1,4 +1,6 @@
 from app.application.commands.challenge.toggle_challenge_status import ToggleChallengeStatusInteractor
+from app.application.common.ports.wallet_command_gateway import WalletCommandGateway
+from app.infrastructure.adapters.wallet_data_mapper_sqla import SqlaWalletDataMapper
 from dishka import Provider, Scope, provide, provide_all
 
 from app.application.commands.user.activate_user import ActivateUserInteractor
@@ -84,6 +86,11 @@ class ApplicationProvider(Provider):
     challenge_command_gateway = provide(
         source=SqlaChallengeDataMapper,
         provides=ChallengeCommandGateway,
+    )
+    
+    wallet_command_gateway = provide(
+        source=SqlaWalletDataMapper,
+        provides=WalletCommandGateway,
     )
     # Commands
     commands = provide_all(

@@ -35,23 +35,3 @@ class SqlaChallengeDataMapper(ChallengeCommandGateway):
 
         except SQLAlchemyError as error:
             raise DataMapperError(DB_QUERY_FAILED) from error
-
-    async def update_by_id(
-        self, 
-        challenge_id: ChallengeId,
-        challenge: Challenge,
-    ) -> None:
-        """:raises DataMapperError:"""
-        try:
-            await self._session.merge(challenge)
-        except SQLAlchemyError as error:
-            raise DataMapperError(DB_QUERY_FAILED) from error
-
-    async def delete_by_id(self, challenge_id: ChallengeId) -> None:
-        """:raises DataMapperError:"""
-        try:
-            challenge = await self.read_by_id(challenge_id)
-            if challenge is not None:
-                await self._session.delete(challenge)
-        except SQLAlchemyError as error:
-            raise DataMapperError(DB_QUERY_FAILED) from error

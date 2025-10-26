@@ -2,7 +2,7 @@ import logging
 from dataclasses import dataclass
 from typing import TypedDict
 from uuid import UUID
-from datetime import datetime, timezone
+from datetime import datetime
 from decimal import Decimal
 from app.application.common.ports.flusher import Flusher
 from app.application.common.ports.streamer_profile_command_gateway import StreamerProfileCommandGateway
@@ -15,16 +15,15 @@ from app.application.common.ports.user_command_gateway import UserCommandGateway
 from app.application.common.ports.wallet_command_gateway import WalletCommandGateway
 from app.application.common.services.current_user import CurrentUserService
 
-from app.domain.enums.fee import Fee
-from app.domain.enums.challenge_status import Status
 from app.domain.enums.user_role import UserRole
+from app.domain.enums.user_status import UserStatus
 from app.domain.exceptions.base import DomainError
 from app.domain.services.challenge import ChallengeService
 from app.domain.services.wallet import WalletService
 from app.domain.value_objects.text import Title, Description
 from app.domain.value_objects.id import UserId
 from app.domain.value_objects.token import ChallengeAmount
-from app.domain.value_objects.time import CreatedAt, ExpiresAt
+from app.domain.value_objects.time import ExpiresAt
 
 log = logging.getLogger(__name__)
 
@@ -86,8 +85,11 @@ class CreateChallengeInteractor:
         #check assigned_to is a valid streamer
         streamer_id = UserId(request_data.assigned_to)
         streamer = await self._user_command_gateway.read_by_id(streamer_id)
+        
         if not streamer or streamer.user_type != UserRole.STREAMER:
             raise DomainError("Assigned to is not a valid streamer")
+        if streamer.status != UserStatus.ACTIVE:
+            raise DomainError("Assigned streamer is not active")
         
         streamer_profile = await self._streamer_profile_gateway.read_by_id(streamer_id)
         

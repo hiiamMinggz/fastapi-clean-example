@@ -21,7 +21,7 @@ class WalletService:
         updated_at = UpdatedAt(now)
         
         wallet = Wallet(
-            user_id=user_id,
+            id_=user_id,
             balance=inited_balance,
             created_at=created_at,
             updated_at=updated_at,

@@ -1,6 +1,7 @@
 import logging
 from dataclasses import dataclass
 
+from app.application.common.ports.flusher import Flusher
 from app.application.common.ports.transaction_manager import (
     TransactionManager,
 )
@@ -42,6 +43,7 @@ class ToggleChallengeStatusInteractor:
         challenge_service: ChallengeService,
         wallet_command_gateway: WalletCommandGateway,
         wallet_service: WalletService,
+        flusher: Flusher,
         transaction_manager: TransactionManager,
     ):
         self._current_user_service = current_user_service
@@ -49,6 +51,7 @@ class ToggleChallengeStatusInteractor:
         self._challenge_service = challenge_service
         self._wallet_command_gateway = wallet_command_gateway
         self._wallet_service = wallet_service
+        self._flusher = flusher
         self._transaction_manager = transaction_manager
 
     async def execute(self, request_data: ToggleChallengeStatusRequest) -> None:
@@ -165,7 +168,7 @@ class ToggleChallengeStatusInteractor:
             
             self._wallet_service.transfer(
                 from_wallet= ..., # HOLDER wallet
-                to_wallet=streamer_wallet, # STREAMER wallet
+                to_wallet=streamer_wallet,
                 amount=challenge.amount - dareus_earn
             )
             self._wallet_service.transfer(
@@ -177,11 +180,7 @@ class ToggleChallengeStatusInteractor:
                 challenge=challenge,
             )
 
-        await self._challenge_command_gateway.update_by_id(challenge_id, challenge)
-        await self._wallet_command_gateway.update_by_id(challenge.created_by, viewer_wallet)
-        await self._wallet_command_gateway.update_by_id(challenge.assigned_to, streamer_wallet)
-        # TODO: update HOLDER and EARNER wallets
-        
+        await self._flusher.flush()
         await self._transaction_manager.commit()
 
         log.info(

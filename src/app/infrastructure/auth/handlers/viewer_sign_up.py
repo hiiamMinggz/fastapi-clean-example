@@ -6,10 +6,12 @@ from uuid import UUID
 from app.application.common.ports.flusher import Flusher
 from app.application.common.ports.transaction_manager import TransactionManager
 from app.application.common.ports.user_command_gateway import UserCommandGateway
+from app.application.common.ports.wallet_command_gateway import WalletCommandGateway
 from app.application.common.services.current_user import CurrentUserService
 from app.domain.enums.user_role import UserRole
 from app.domain.exceptions.user import UsernameAlreadyExistsError
 from app.domain.services.user import UserService
+from app.domain.services.wallet import WalletService
 from app.domain.value_objects.raw_password import RawPassword
 from app.domain.value_objects.text import Email
 from app.domain.value_objects.username import Username
@@ -48,12 +50,16 @@ class ViewerSignUpHandler:
         current_user_service: CurrentUserService,
         user_service: UserService,
         user_command_gateway: UserCommandGateway,
+        wallet_service: WalletService,
+        wallet_command_gateway: WalletCommandGateway,
         flusher: Flusher,
         transaction_manager: TransactionManager,
     ):
         self._current_user_service = current_user_service
         self._user_service = user_service
         self._user_command_gateway = user_command_gateway
+        self._wallet_service = wallet_service
+        self._wallet_command_gateway = wallet_command_gateway
         self._flusher = flusher
         self._transaction_manager = transaction_manager
 
@@ -83,9 +89,12 @@ class ViewerSignUpHandler:
             raw_password=password,
             email=email,
         )
-        
+        viewer_wallet = self._wallet_service.create_wallet(
+            user_id=viewer.id_,
+        )
 
         self._user_command_gateway.add(viewer)
+        self._wallet_command_gateway.add(viewer_wallet)
 
         try:
             await self._flusher.flush()

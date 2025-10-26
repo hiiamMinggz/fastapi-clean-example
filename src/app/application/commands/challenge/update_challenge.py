@@ -3,6 +3,7 @@ from decimal import Decimal
 import logging
 from dataclasses import dataclass
 
+from app.application.common.ports.flusher import Flusher
 from app.application.common.ports.transaction_manager import (
     TransactionManager,
 )
@@ -47,11 +48,13 @@ class UpdateChallengeInteractor:
         current_user_service: CurrentUserService,
         challenge_command_gateway: ChallengeCommandGateway,
         challenge_service: ChallengeService,
+        flusher: Flusher,
         transaction_manager: TransactionManager,
     ):
         self._current_user_service = current_user_service
         self._challenge_command_gateway = challenge_command_gateway
         self._challenge_service = challenge_service
+        self._flusher = flusher
         self._transaction_manager = transaction_manager
 
     async def execute(self, request_data: UpdateChallengeRequest) -> None:
@@ -115,7 +118,7 @@ class UpdateChallengeInteractor:
                 expires_at=new_expires_at,
             )
         
-        await self._challenge_command_gateway.update_by_id(challenge_id, challenge)
+        await self._flusher.flush()
         await self._transaction_manager.commit()
 
         log.info(

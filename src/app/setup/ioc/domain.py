@@ -1,3 +1,4 @@
+from app.domain.services.wallet import WalletService
 from dishka import Provider, Scope, provide
 
 from app.domain.ports.password_hasher import PasswordHasher
@@ -20,6 +21,7 @@ class DomainProvider(Provider):
     user_service = provide(source=UserService)
     challenge_service = provide(source=ChallengeService)
     streamer_profile_service = provide(source=StreamerProfileService)
+    wallet_service = provide(source=WalletService)
     
     # Ports
     password_hasher = provide(

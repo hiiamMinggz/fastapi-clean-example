@@ -25,7 +25,7 @@ class User(Entity[UserId]):
         updated_at: UpdatedAt,
     ) -> None:
         super().__init__(id_=id_)
-        self.username = username
+        self.user_name = username
         self.email = email
         self.password_hash = password_hash
         self.user_type = user_type

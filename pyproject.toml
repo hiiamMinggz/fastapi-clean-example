@@ -50,6 +50,11 @@ test = [
     "pytest-asyncio==1.1.0"
 ]
 
+[dependency-groups]
+dev = [
+    "ruff>=0.12.5",
+]
+
 [tool.coverage.report]
 show_missing = true
 skip_empty = true

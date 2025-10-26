@@ -8,11 +8,13 @@ from app.application.common.ports.flusher import Flusher
 from app.application.common.ports.streamer_profile_command_gateway import StreamerProfileCommandGateway
 from app.application.common.ports.transaction_manager import TransactionManager
 from app.application.common.ports.user_command_gateway import UserCommandGateway
+from app.application.common.ports.wallet_command_gateway import WalletCommandGateway
 from app.application.common.services.current_user import CurrentUserService
 from app.domain.enums.user_role import UserRole
 from app.domain.exceptions.user import UsernameAlreadyExistsError
 from app.domain.services.streamer_profile import StreamerProfileService
 from app.domain.services.user import UserService
+from app.domain.services.wallet import WalletService
 from app.domain.value_objects.raw_password import RawPassword
 from app.domain.value_objects.text import Email
 from app.domain.value_objects.token import StreamerChallengeFixedAmount
@@ -57,17 +59,21 @@ class StreamerSignUpHandler:
         self,
         current_user_service: CurrentUserService,
         user_service: UserService,
-        streamer_profile_service: StreamerProfileService,
         user_command_gateway: UserCommandGateway,
+        streamer_profile_service: StreamerProfileService,
         streamer_profile_command_gateway: StreamerProfileCommandGateway,
+        wallet_service: WalletService,
+        wallet_command_gateway: WalletCommandGateway,
         flusher: Flusher,
         transaction_manager: TransactionManager,
     ):
         self._current_user_service = current_user_service
         self._user_service = user_service
-        self._streamer_profile_service = streamer_profile_service
         self._user_command_gateway = user_command_gateway
+        self._streamer_profile_service = streamer_profile_service
         self._streamer_profile_command_gateway = streamer_profile_command_gateway
+        self._wallet_service = wallet_service
+        self._wallet_command_gateway = wallet_command_gateway
         self._flusher = flusher
         self._transaction_manager = transaction_manager
 
@@ -114,10 +120,13 @@ class StreamerSignUpHandler:
             min_amount_challenge=min_amount_challenge,
             disable_challenges=disable_challenges,
         )
+        streamer_wallet = self._wallet_service.create_wallet(
+            user_id=streamer.id_,
+        )
         
         self._user_command_gateway.add(streamer)
         self._streamer_profile_command_gateway.add(streamer_profile)
-
+        self._wallet_command_gateway.add(streamer_wallet)
         try:
             await self._flusher.flush()
         except UsernameAlreadyExistsError:

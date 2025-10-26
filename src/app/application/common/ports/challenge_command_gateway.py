@@ -14,11 +14,3 @@ class ChallengeCommandGateway(Protocol):
     async def read_by_id(self, challenge_id: ChallengeId) -> Challenge | None:
         """:raises DataMapperError:"""
     
-    @abstractmethod
-    async def update_by_id(self, challenge_id: ChallengeId, challenge: Challenge) -> None:
-        """:raises DataMapperError:"""
-    
-    @abstractmethod
-    async def delete_by_id(self, challenge_id: ChallengeId) -> None:
-        """:raises DataMapperError:"""
-

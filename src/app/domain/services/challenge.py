@@ -26,10 +26,11 @@ class ChallengeService:
          ) -> Challenge:
         
         challenge_id = ChallengeId(self.challenge_id_generator())
-        fee = Fee.CHALLENGE_FEE
+        fee = Fee.DONE_CHALLENGE_FEE
         status = Status.PENDING
         now = datetime.now(timezone.utc)
         created_at = CreatedAt(now)
+        accepted_at = AcceptedAt(None)
        
         challenge = Challenge(
             id_=challenge_id,
@@ -43,6 +44,7 @@ class ChallengeService:
             status=status,
             created_at=created_at,
             expires_at=expires_at,
+            accepted_at=accepted_at,
         )
         return challenge
 
