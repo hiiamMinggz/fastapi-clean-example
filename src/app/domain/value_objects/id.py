@@ -8,6 +8,9 @@ from app.domain.value_objects.base import ValueObject
 class UserId(ValueObject):
     value: UUID
 
+class WalletId(ValueObject):
+    value: UUID
+
 @dataclass(frozen=True, slots=True, repr=False)
 class ChallengeId(ValueObject):
     value: UUID

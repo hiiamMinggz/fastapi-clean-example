@@ -18,7 +18,6 @@ class Title(ValueObject):
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
-        super(Title, self).__post_init__()
         self._validate_title_length(self.value)
 
     def _validate_title_length(self, title_value: str) -> None:
@@ -37,13 +36,11 @@ class Description(ValueObject):
     MIN_LEN: ClassVar[Final[int]] = 1
     MAX_LEN: ClassVar[Final[int]] = 255
 
-    value: Optional[str] = None
+    value: str
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
-        super(Description, self).__post_init__()
-        if self.value is not None:
-            self._validate_description_length(self.value)
+        self._validate_description_length(self.value)
 
     def _validate_description_length(self, description_value: str) -> None:
         """:raises DomainFieldError:"""
@@ -66,7 +63,6 @@ class Email(ValueObject):
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
-        super(Email, self).__post_init__()
         self._validate_email_length(self.value)
         self._validate_email_format(self.value)
 

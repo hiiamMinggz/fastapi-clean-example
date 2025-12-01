@@ -42,10 +42,6 @@ class WalletService:
             raise DomainError("Insufficient balance in wallet")
         wallet.balance -= amount
     
-    def get_balance(self, wallet: Wallet) -> Balance:
-        """returns the current balance of the wallet"""
-        return wallet.balance
-    
     def transfer(self, from_wallet: Wallet, to_wallet: Wallet, amount: Token) -> None:
         """transfers amount from one wallet to another"""
         if from_wallet.id_ == to_wallet.id_:

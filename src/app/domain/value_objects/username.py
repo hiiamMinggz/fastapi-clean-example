@@ -10,7 +10,7 @@ from app.domain.value_objects.base import ValueObject
 class Username(ValueObject):
     """raises DomainFieldError"""
 
-    MIN_LEN: ClassVar[Final[int]] = 5
+    MIN_LEN: ClassVar[Final[int]] = 2
     MAX_LEN: ClassVar[Final[int]] = 20
 
     # Pattern for validating a username:
@@ -35,7 +35,6 @@ class Username(ValueObject):
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
-        super(Username, self).__post_init__()
         self._validate_username_length(self.value)
         self._validate_username_pattern(self.value)
 

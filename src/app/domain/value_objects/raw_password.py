@@ -15,7 +15,6 @@ class RawPassword(ValueObject):
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
-        super(RawPassword, self).__post_init__()
         self._validate_password_length(self.value)
 
     def _validate_password_length(self, password_value: str) -> None:

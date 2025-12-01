@@ -6,17 +6,17 @@ from app.domain.exceptions.base import DomainFieldError
 from app.domain.value_objects.base import ValueObject
 from decimal import Decimal
 
+ZERO: Final[Decimal] = Decimal("0.00")
+
 @total_ordering
 @dataclass(frozen=True, slots=True, repr=False)
 class Token(ValueObject):
     """raises DomainFieldError"""
-    
     value: Decimal
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
-        super(Token, self).__post_init__()
-        self._validate_token_type(self.value)
+        pass
     
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Token):
@@ -42,99 +42,86 @@ class Token(ValueObject):
         if not isinstance(scalar, Decimal):
             return NotImplemented
         return self.__class__(self.value * scalar)
-        
-
-    def _validate_token_type(self, token_value: Decimal) -> None:
-        if not isinstance(token_value, Decimal):
-            raise DomainFieldError(
-                f"Token must be a Decimal, but got {type(token_value)}.",
-            )
-        
+            
 @dataclass(frozen=True, slots=True, repr=False)
 class Balance(Token):
     """raises DomainFieldError"""
-    ZERO: ClassVar[Final[Decimal]] = Decimal("0.00")
-
+    
     value: Decimal
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
-        super(Balance, self).__post_init__()
         self._validate_balance(self.value)
 
     def _validate_balance(self, balance_value: Decimal) -> None:
-        if balance_value < self.ZERO:
+        if balance_value < ZERO:
             raise DomainFieldError(
-                f"Balance must be greater than or equal to {self.ZERO}, but got {balance_value}.",
+                f"Balance must be greater than or equal to {ZERO}, but got {balance_value}.",
             )
 @dataclass(frozen=True, slots=True, repr=False)
 class ChallengeAmount(Token):
     """raises DomainFieldError"""
-    ZERO: ClassVar[Final[Decimal]] = Decimal("0.00")
+    
 
     value: Decimal
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
-        super(ChallengeAmount, self).__post_init__()
         self._validate_challenge_amount(self.value)
 
     def _validate_challenge_amount(self, challenge_amount_value: Decimal) -> None:
-        if challenge_amount_value < self.ZERO:
+        if challenge_amount_value < ZERO:
             raise DomainFieldError(
-                f"Challenge amount must be greater than or equal to {self.ZERO}, but got {challenge_amount_value}.",
+                f"Challenge amount must be greater than or equal to {ZERO}, but got {challenge_amount_value}.",
             )
     
 @dataclass(frozen=True, slots=True, repr=False)
 class DonateAmount(Token):
     """raises DomainFieldError"""
-    ZERO: ClassVar[Final[Decimal]] = Decimal("0.00")
+    
 
     value: Decimal
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
-        super(DonateAmount, self).__post_init__()
         self._validate_donate_amount(self.value)
 
     def _validate_donate_amount(self, donate_amount_value: Decimal) -> None:
-        if donate_amount_value < self.ZERO:
+        if donate_amount_value < ZERO:
             raise DomainFieldError(
-                f"Donate amount must be greater than or equal to {self.ZERO}, but got {donate_amount_value}.",
+                f"Donate amount must be greater than or equal to {ZERO}, but got {donate_amount_value}.",
             )
 
 @dataclass(frozen=True, slots=True, repr=False)
 class CompetitiveAmount(Token):
     """raises DomainFieldError"""
-    ZERO: ClassVar[Final[Decimal]] = Decimal("0.00")
+    
 
     value: Decimal
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
-        super(CompetitiveAmount, self).__post_init__()
         self._validate_competitive_amount(self.value)
 
     def _validate_competitive_amount(self, competitive_amount_value: Decimal) -> None:
-        if competitive_amount_value < self.ZERO:
+        if competitive_amount_value < ZERO:
             raise DomainFieldError(
-                f"Competitive amount must be greater than or equal to {self.ZERO}, but got {competitive_amount_value}.",
+                f"Competitive amount must be greater than or equal to {ZERO}, but got {competitive_amount_value}.",
             )
 
 @dataclass(frozen=True, slots=True, repr=False)
 class StreamerChallengeFixedAmount(Token):
     """raises DomainFieldError"""
-    ZERO: ClassVar[Final[Decimal]] = Decimal("0.00")
+    
 
     value: Decimal
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
-        super(StreamerChallengeFixedAmount, self).__post_init__()
         self._validate_streamer_challenge_fixed_amount(self.value)
 
     def _validate_streamer_challenge_fixed_amount(self, streamer_challenge_fixed_amount_value: Decimal) -> None:
-        if streamer_challenge_fixed_amount_value < self.ZERO:
+        if streamer_challenge_fixed_amount_value < ZERO:
             raise DomainFieldError(
-                f"Streamer challenge fixed amount must be greater than or equal to {self.ZERO}, but got {streamer_challenge_fixed_amount_value}.",
+                f"Streamer challenge fixed amount must be greater than or equal to {ZERO}, but got {streamer_challenge_fixed_amount_value}.",
             )

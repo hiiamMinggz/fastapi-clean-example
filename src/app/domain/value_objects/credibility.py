@@ -16,7 +16,6 @@ class Credibility(ValueObject):
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
-        super(Credibility, self).__post_init__()
         self._validate_credibility(self.value)
 
     def _validate_credibility(self, credibility_value: float) -> None:
