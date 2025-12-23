@@ -2,9 +2,9 @@ from sqlalchemy import UUID, Column, Table, NUMERIC, DateTime, String
 from sqlalchemy.orm import composite
 
 from app.domain.entities.system_wallet import SystemWallet
-from app.domain.value_objects.id import UserId
+from app.domain.user.value_objects import UserId
 from app.domain.value_objects.token import Balance
-from app.domain.value_objects.username import Username
+from app.domain.user.value_objects import Username
 from app.domain.value_objects.time import CreatedAt, UpdatedAt
 from app.infrastructure.persistence_sqla.registry import mapping_registry
 

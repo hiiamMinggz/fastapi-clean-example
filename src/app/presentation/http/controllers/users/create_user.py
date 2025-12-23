@@ -12,7 +12,7 @@ from app.application.commands.user.create_user import (
     CreateUserResponse,
 )
 from app.application.common.exceptions.authorization import AuthorizationError
-from app.domain.enums.user_role import UserRole
+from app.domain.user.user_role import UserRole
 from app.domain.exceptions.base import DomainFieldError
 from app.domain.exceptions.user import (
     RoleAssignmentNotPermittedError,
@@ -20,7 +20,7 @@ from app.domain.exceptions.user import (
 )
 from app.infrastructure.auth.exceptions import AuthenticationError
 from app.infrastructure.exceptions.gateway import DataMapperError
-from app.domain.value_objects.username import Username
+from app.domain.user.value_objects import Username
 from app.domain.value_objects.text import Email
 from app.domain.value_objects.raw_password import RawPassword
 from app.presentation.http.auth.fastapi_openapi_markers import cookie_scheme

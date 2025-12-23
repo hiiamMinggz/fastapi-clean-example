@@ -1,10 +1,10 @@
 from sqlalchemy import UUID, Column, DateTime, Enum, Numeric, String, Table
 from sqlalchemy.orm import composite
 
-from app.domain.entities.challenge import Challenge
-from app.domain.enums.challenge_status import Status
+from app.domain.challenge.challenge import Challenge
+from app.domain.challenge.challenge_status import Status
 from app.domain.enums.fee import Fee
-from app.domain.value_objects.id import ChallengeId, UserId
+from app.domain.shared.value_objects.id import ChallengeId, UserId
 from app.domain.value_objects.text import Title, Description
 from app.domain.value_objects.token import ChallengeAmount, StreamerChallengeFixedAmount
 from app.domain.value_objects.time import CreatedAt, ExpiresAt, AcceptedAt

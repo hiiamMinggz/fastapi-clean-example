@@ -13,13 +13,12 @@ from app.application.common.services.authorization.permissions import (
     RoleManagementContext,
 )
 from app.application.common.services.current_user import CurrentUserService
-from app.domain.entities.user import User
-from app.domain.enums.user_role import UserRole
-from app.domain.enums.user_status import UserStatus
-from app.domain.exceptions.user import UserNotFoundByUserIdError, UserNotFoundByUsernameError
-from app.domain.services.user import UserService
-from app.domain.value_objects.id import UserId
-from app.domain.value_objects.username import Username
+from app.domain.user.user import User
+from app.domain.user.user_role import UserRole
+from app.domain.user.user_status import UserStatus
+from app.domain.user.exceptions import UserNotFoundByUserIdError
+from app.domain.user.service import UserService
+from app.domain.user.value_objects import UserId
 
 log = logging.getLogger(__name__)
 

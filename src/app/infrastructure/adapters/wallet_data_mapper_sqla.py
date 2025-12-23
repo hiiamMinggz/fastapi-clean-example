@@ -2,8 +2,8 @@ from sqlalchemy import Select, select
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.application.common.ports.wallet_command_gateway import WalletCommandGateway
-from app.domain.entities.wallet import Wallet
-from app.domain.value_objects.id import UserId
+from app.domain.wallet.wallet import Wallet
+from app.domain.user.value_objects import UserId
 from app.infrastructure.adapters.constants import DB_QUERY_FAILED
 from app.infrastructure.adapters.types import MainAsyncSession
 from app.infrastructure.exceptions.gateway import DataMapperError

@@ -1,8 +1,8 @@
 from sqlalchemy import UUID, Column, Table, NUMERIC, DateTime
 from sqlalchemy.orm import composite
 
-from app.domain.entities.wallet import Wallet
-from app.domain.value_objects.id import UserId
+from app.domain.wallet.wallet import Wallet
+from app.domain.user.value_objects import UserId
 from app.domain.value_objects.token import Balance
 from app.domain.value_objects.time import CreatedAt, UpdatedAt
 from app.infrastructure.persistence_sqla.registry import mapping_registry

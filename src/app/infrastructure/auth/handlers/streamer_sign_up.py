@@ -10,7 +10,7 @@ from app.application.common.ports.transaction_manager import TransactionManager
 from app.application.common.ports.user_command_gateway import UserCommandGateway
 from app.application.common.ports.wallet_command_gateway import WalletCommandGateway
 from app.application.common.services.current_user import CurrentUserService
-from app.domain.enums.user_role import UserRole
+from app.domain.user.user_role import UserRole
 from app.domain.exceptions.user import UsernameAlreadyExistsError
 from app.domain.services.streamer_profile import StreamerProfileService
 from app.domain.services.user import UserService
@@ -18,7 +18,7 @@ from app.domain.services.wallet import WalletService
 from app.domain.value_objects.raw_password import RawPassword
 from app.domain.value_objects.text import Email
 from app.domain.value_objects.token import StreamerChallengeFixedAmount
-from app.domain.value_objects.username import Username
+from app.domain.user.value_objects import Username
 from app.infrastructure.auth.exceptions import (
     AlreadyAuthenticatedError,
     AuthenticationError,

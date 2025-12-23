@@ -1,12 +1,12 @@
 from sqlalchemy import UUID, Boolean, Column, Enum, LargeBinary, String, Table, NUMERIC, DateTime, DOUBLE_PRECISION
 from sqlalchemy.orm import composite
 
-from app.domain.entities.user import User
-from app.domain.enums.user_role import UserRole
-from app.domain.enums.user_status import UserStatus
-from app.domain.value_objects.id import UserId
+from app.domain.user.user import User
+from app.domain.user.user_role import UserRole
+from app.domain.user.user_status import UserStatus
+from app.domain.user.value_objects import UserId
 from app.domain.value_objects.user_password_hash import UserPasswordHash
-from app.domain.value_objects.username import Username
+from app.domain.user.value_objects import Username
 from app.domain.value_objects.text import Email
 from app.domain.value_objects.credibility import Credibility
 from app.domain.value_objects.token import Balance

@@ -1,8 +1,8 @@
 from abc import abstractmethod
 from typing import Protocol
 
-from app.domain.entities.challenge import Challenge
-from app.domain.value_objects.id import ChallengeId
+from app.domain.challenge.challenge import Challenge
+from app.domain.challenge.value_objects import ChallengeId
 
 
 class ChallengeCommandGateway(Protocol):

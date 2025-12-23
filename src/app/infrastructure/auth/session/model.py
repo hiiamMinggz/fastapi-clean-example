@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from app.domain.value_objects.id import UserId
+from app.domain.user.value_objects import UserId
 
 
 @dataclass(eq=False, kw_only=True)

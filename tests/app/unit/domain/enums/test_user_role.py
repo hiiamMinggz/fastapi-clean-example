@@ -1,6 +1,6 @@
 import pytest
 
-from app.domain.enums.user_role import UserRole
+from app.domain.user.user_role import UserRole
 
 
 @pytest.mark.parametrize(

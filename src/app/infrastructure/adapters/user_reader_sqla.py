@@ -9,7 +9,7 @@ from app.application.common.ports.user_query_gateway import UserQueryGateway
 from app.application.common.query_models.user import UserQueryModel
 from app.application.common.query_params.sorting import SortingOrder
 from app.application.common.query_params.user import UserListParams
-from app.domain.enums.user_role import UserRole
+from app.domain.user.user_role import UserRole
 from app.infrastructure.adapters.constants import DB_QUERY_FAILED
 from app.infrastructure.adapters.types import MainAsyncSession
 from app.infrastructure.exceptions.gateway import ReaderError

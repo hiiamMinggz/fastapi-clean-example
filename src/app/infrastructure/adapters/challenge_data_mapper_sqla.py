@@ -2,9 +2,8 @@ from sqlalchemy import Select, select
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.application.common.ports.challenge_command_gateway import ChallengeCommandGateway
-from app.domain.entities.challenge import Challenge
-from app.domain.value_objects.id import ChallengeId
-from app.infrastructure.adapters.constants import DB_QUERY_FAILED
+from app.domain.challenge.challenge import Challenge
+from app.domain.challenge.value_objects import ChallengeIdfrom app.infrastructure.adapters.constants import DB_QUERY_FAILED
 from app.infrastructure.adapters.types import MainAsyncSession
 from app.infrastructure.exceptions.gateway import DataMapperError
 

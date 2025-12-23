@@ -1,11 +1,15 @@
 from decimal import Decimal
-
-from app.domain.entities.wallet import Wallet
-from app.domain.value_objects.id import UserId
-from app.domain.value_objects.token import Balance, Token
-from app.domain.value_objects.time import CreatedAt, UpdatedAt
-from app.domain.exceptions.base import DomainError
 from datetime import datetime, timezone
+
+from app.domain.shared.value_objects.token import Token
+from app.domain.shared.value_objects.time import CreatedAt, UpdatedAt
+from app.domain.base import DomainError
+
+from app.domain.wallet.wallet import Wallet
+from app.domain.wallet.value_objects import Balance
+from app.domain.user.value_objects import UserId
+
+
 class WalletService:
     def __init__(self) -> None:
         pass

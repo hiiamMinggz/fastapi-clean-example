@@ -85,7 +85,7 @@ def create_streamer_sign_up_router() -> APIRouter:
         status_code=status.HTTP_201_CREATED,
     )
     @inject
-    async def viewer_sign_up(
+    async def streamer_sign_up(
         request_data: StreamerSignUpRequest,
         handler: FromDishka[StreamerSignUpHandler],
     ) -> StreamerSignUpResponse:

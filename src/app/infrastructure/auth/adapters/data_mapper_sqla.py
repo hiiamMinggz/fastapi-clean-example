@@ -1,7 +1,7 @@
 from sqlalchemy import Delete, delete
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.domain.value_objects.id import UserId
+from app.domain.user.value_objects import UserId
 from app.infrastructure.adapters.constants import DB_QUERY_FAILED
 from app.infrastructure.auth.adapters.types import AuthAsyncSession
 from app.infrastructure.auth.session.model import AuthSession

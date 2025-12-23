@@ -1,11 +1,14 @@
 from dataclasses import dataclass
-from typing import ClassVar, Final
+from typing import ClassVar, Final, Optional
+from uuid import UUID
+from app.domain.base import DomainFieldError, ValueObject
+from app.domain.shared.value_objects.token import Token
+from decimal import Decimal
 
-from app.domain.exceptions.base import DomainFieldError
-from app.domain.value_objects.base import ValueObject
-from typing import Optional
-import re
-
+@dataclass(frozen=True, slots=True, repr=False)
+class ChallengeId(ValueObject):
+    value: UUID
+    
 
 @dataclass(frozen=True, slots=True, repr=False)
 class Title(ValueObject):
@@ -29,6 +32,7 @@ class Title(ValueObject):
                 f"{self.MAX_LEN} characters.",
             )
         
+
 @dataclass(frozen=True, slots=True, repr=False)
 class Description(ValueObject):
     """raises DomainFieldError"""
@@ -52,32 +56,17 @@ class Description(ValueObject):
             )
             
 @dataclass(frozen=True, slots=True, repr=False)
-class Email(ValueObject):
+class ChallengeAmount(Token):
     """raises DomainFieldError"""
-    
-    MIN_LEN: ClassVar[Final[int]] = 5
-    MAX_LEN: ClassVar[Final[int]] = 255
-    EMAIL_PATTERN: ClassVar[Final[str]] = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
-    
-    value: str
+    ZERO: ClassVar[Final[Decimal]] = Decimal("0.00")
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
-        self._validate_email_length(self.value)
-        self._validate_email_format(self.value)
+        super(ChallengeAmount, self).__post_init__()
+        self._validate_challenge_amount(self.value)
 
-    def _validate_email_length(self, email_value: str) -> None:
-        """:raises DomainFieldError:"""
-        if len(email_value) < self.MIN_LEN or len(email_value) > self.MAX_LEN:
+    def _validate_challenge_amount(self, challenge_amount_value: Decimal) -> None:
+        if challenge_amount_value < self.ZERO:
             raise DomainFieldError(
-                f"Email must be between "
-                f"{self.MIN_LEN} and "
-                f"{self.MAX_LEN} characters.",
-            )
-
-    def _validate_email_format(self, email_value: str) -> None:
-        """:raises DomainFieldError:"""
-        if not re.match(self.EMAIL_PATTERN, email_value):
-            raise DomainFieldError(
-                "Email format is invalid.",
+                f"Challenge amount must be greater than or equal to {self.ZERO}, but got {challenge_amount_value}.",
             )

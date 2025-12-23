@@ -11,7 +11,7 @@ from app.application.commands.challenge.toggle_challenge_status import (
     ToggleChallengeStatusRequest,
 )
 from app.application.common.exceptions.authorization import AuthorizationError
-from app.domain.enums.challenge_status import Status
+from app.domain.challenge.challenge_status import Status
 from app.domain.exceptions.base import DomainError
 from app.infrastructure.auth.exceptions import AuthenticationError
 from app.infrastructure.exceptions.gateway import DataMapperError

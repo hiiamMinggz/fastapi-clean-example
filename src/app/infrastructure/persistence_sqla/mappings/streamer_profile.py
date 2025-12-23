@@ -1,9 +1,9 @@
 from sqlalchemy import UUID, Boolean, Column, Integer, String, Table, DateTime, NUMERIC
 from sqlalchemy.orm import composite
 
-from app.domain.entities.streamer_profile import StreamerProfile
-from app.domain.value_objects.id import UserId
-from app.domain.value_objects.username import Username
+from app.domain.user.streamer_profile import StreamerProfile
+from app.domain.user.value_objects import UserId
+from app.domain.user.value_objects import Username
 from app.domain.value_objects.token import StreamerChallengeFixedAmount
 from app.domain.value_objects.time import CreatedAt, UpdatedAt
 from app.infrastructure.persistence_sqla.registry import mapping_registry

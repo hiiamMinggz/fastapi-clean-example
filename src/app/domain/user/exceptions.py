@@ -1,9 +1,9 @@
 from typing import Any
 
-from app.domain.enums.user_role import UserRole
-from app.domain.exceptions.base import DomainError
-from app.domain.value_objects.id import UserId
-from app.domain.value_objects.username import Username
+from app.domain.user.user_role import UserRole
+from app.domain.base import DomainError
+from app.domain.user.value_objects import UserId
+from app.domain.user.value_objects import Username
 
 
 class UsernameAlreadyExistsError(DomainError):

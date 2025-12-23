@@ -10,13 +10,16 @@ from app.application.common.ports.transaction_manager import (
 from app.application.common.ports.user_command_gateway import UserCommandGateway
 from app.application.common.ports.wallet_command_gateway import WalletCommandGateway
 from app.application.common.services.current_user import CurrentUserService
-from app.domain.enums.user_role import UserRole
-from app.domain.exceptions.user import UsernameAlreadyExistsError
-from app.domain.services.user import UserService
-from app.domain.services.wallet import WalletService
-from app.domain.value_objects.raw_password import RawPassword
-from app.domain.value_objects.username import Username
-from app.domain.value_objects.text import Email
+from app.domain.user.user_role import UserRole
+
+from app.domain.user.value_objects import (
+    Username,
+    Email,
+    RawPassword,
+)
+from app.domain.user.exceptions import UsernameAlreadyExistsError
+from app.domain.user.service import UserService
+from app.domain.wallet.service import WalletService
 
 log = logging.getLogger(__name__)
 

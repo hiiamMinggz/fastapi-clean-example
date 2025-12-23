@@ -19,7 +19,7 @@ from app.application.common.services.authorization.permissions import (
     RoleManagementContext,
 )
 from app.application.common.services.current_user import CurrentUserService
-from app.domain.enums.user_role import UserRole
+from app.domain.user.user_role import UserRole
 
 log = logging.getLogger(__name__)
 

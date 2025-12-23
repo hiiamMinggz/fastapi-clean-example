@@ -2,9 +2,9 @@ from sqlalchemy import Select, select
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.application.common.ports.user_command_gateway import UserCommandGateway
-from app.domain.entities.user import User
-from app.domain.value_objects.id import UserId
-from app.domain.value_objects.username import Username
+from app.domain.user.user import User
+from app.domain.user.value_objects import UserId
+from app.domain.user.value_objects import Username
 from app.infrastructure.adapters.constants import DB_QUERY_FAILED
 from app.infrastructure.adapters.types import MainAsyncSession
 from app.infrastructure.exceptions.gateway import DataMapperError

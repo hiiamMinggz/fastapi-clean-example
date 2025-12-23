@@ -7,7 +7,7 @@ from app.application.common.services.authorization.permissions import (
     RoleManagementContext,
     UserManagementContext,
 )
-from app.domain.enums.user_role import UserRole
+from app.domain.user.user_role import UserRole
 from tests.app.unit.factories.user_entity import create_user
 from tests.app.unit.factories.value_objects import create_user_id
 

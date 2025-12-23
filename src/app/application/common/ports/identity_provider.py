@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Protocol
 
-from app.domain.value_objects.id import UserId
+from app.domain.user.value_objects import UserId
 
 
 class IdentityProvider(Protocol):

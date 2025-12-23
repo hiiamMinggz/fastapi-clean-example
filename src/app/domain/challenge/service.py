@@ -1,11 +1,11 @@
 from datetime import datetime, timezone
-from app.domain.entities.challenge import Challenge
+from app.domain.challenge.challenge import Challenge
 from app.domain.value_objects.text import Title, Description
 from app.domain.value_objects.token import ChallengeAmount, StreamerChallengeFixedAmount
 from app.domain.value_objects.time import CreatedAt, ExpiresAt, AcceptedAt, UpdatedAt
-from app.domain.value_objects.id import UserId, ChallengeId
+from app.domain.user.value_objects import UserId, ChallengeId
 from app.domain.enums.fee import Fee
-from app.domain.enums.challenge_status import Status
+from app.domain.challenge.challenge_status import Status
 from app.domain.ports.id_generator import IdGenerator
 from app.domain.exceptions.base import DomainError
 

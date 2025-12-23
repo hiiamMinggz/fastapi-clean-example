@@ -1,8 +1,8 @@
 from abc import abstractmethod
 from typing import Protocol
 
-from app.domain.entities.wallet import Wallet
-from app.domain.value_objects.id import UserId
+from app.domain.wallet.wallet import Wallet
+from app.domain.wallet.value_objects import WalletId
 
 
 class WalletCommandGateway(Protocol):
@@ -11,5 +11,5 @@ class WalletCommandGateway(Protocol):
         """:raises DataMapperError:"""
 
     @abstractmethod
-    async def read_by_id(self, wallet_id: UserId) -> Wallet | None:
+    async def read_by_id(self, wallet_id: WalletId) -> Wallet | None:
         """:raises DataMapperError:"""

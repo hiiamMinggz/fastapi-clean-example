@@ -1,12 +1,15 @@
 from datetime import timedelta
-from app.domain.entities.base import Entity
-from app.domain.enums.challenge_status import Status
-from app.domain.enums.fee import Fee
-from app.domain.value_objects.id import ChallengeId, UserId
-from app.domain.value_objects.text import Title, Description
-from app.domain.value_objects.token import ChallengeAmount, StreamerChallengeFixedAmount
-from app.domain.value_objects.time import CreatedAt, ExpiresAt, AcceptedAt
-from app.domain.exceptions.base import DomainError
+from app.domain.base import Entity, DomainError
+from app.domain.shared.value_objects.time import CreatedAt, ExpiresAt, AcceptedAt
+from app.domain.user.value_objects import UserId, StreamerChallengeFixedAmount
+from app.domain.challenge.value_objects import (
+    ChallengeId,
+    Title,
+    Description,
+    ChallengeAmount,
+    Status,
+    Fee,
+)
 
 class Challenge(Entity[ChallengeId]):
     def __init__(
@@ -55,11 +58,13 @@ class Challenge(Entity[ChallengeId]):
             raise DomainError(
                 f"Challenge created at must be less than or equal to expires at, but got {self.created_at} and {self.expires_at}.",
             )
+    
     def _creator_validation(self) -> None:
         if self.created_by == self.assigned_to:
             raise DomainError(
                 f"Challenge creator cannot be the same as assignee",
-            )  
+            )
+    
     @property
     def duration(self) -> timedelta:
         return self.expires_at.value - self.created_at.value

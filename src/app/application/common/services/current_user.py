@@ -8,7 +8,7 @@ from app.application.common.services.constants import (
     AUTHZ_NO_CURRENT_USER,
     AUTHZ_NOT_AUTHORIZED,
 )
-from app.domain.entities.user import User
+from app.domain.user.user import User
 
 log = logging.getLogger(__name__)
 

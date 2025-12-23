@@ -1,5 +1,5 @@
 from app.application.common.ports.identity_provider import IdentityProvider
-from app.domain.value_objects.id import UserId
+from app.domain.user.value_objects import UserId
 from app.infrastructure.auth.session.service import AuthSessionService
 
 

@@ -8,10 +8,10 @@ from app.application.common.services.authorization.base import (
 from app.application.common.services.authorization.role_hierarchy import (
     SUBORDINATE_ROLES,
 )
-from app.domain.entities.user import User
-from app.domain.entities.challenge import Challenge
-from app.domain.enums.user_role import UserRole
-from app.domain.enums.challenge_status import Status
+from app.domain.user.user import User
+from app.domain.challenge.challenge import Challenge
+from app.domain.user.user_role import UserRole
+from app.domain.challenge.challenge_status import Status
 
 
 @dataclass(frozen=True, kw_only=True)

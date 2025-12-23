@@ -15,17 +15,15 @@ from app.application.common.services.authorization.permissions import (
     ChallengeManagementContext,
 )
 from app.application.common.services.current_user import CurrentUserService
-from app.domain.entities.challenge import Challenge
-from app.domain.exceptions.challenge import ChallengeNotFoundByIdError
-from app.domain.services.challenge import ChallengeService
-from app.domain.services.wallet import WalletService
-from app.domain.value_objects.id import ChallengeId
-from app.domain.enums.challenge_status import Status
-from app.domain.enums.fee import Fee
+from app.domain.challenge.challenge import Challenge
+from app.domain.challenge.exceptions import ChallengeNotFoundByIdError
+from app.domain.challenge.value_objects import ChallengeId, Status, Fee
+from app.domain.challenge.service import ChallengeService
 from uuid import UUID
 from datetime import datetime, timezone
 
-from app.domain.value_objects.time import AcceptedAt, UpdatedAt
+from app.domain.shared.value_objects.time import AcceptedAt, UpdatedAt
+from app.domain.wallet.service import WalletService
 log = logging.getLogger(__name__)
 
 

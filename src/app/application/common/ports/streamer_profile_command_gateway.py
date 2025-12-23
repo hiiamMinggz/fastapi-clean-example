@@ -1,10 +1,8 @@
 from abc import abstractmethod
 from typing import Protocol
 
-from app.domain.entities.streamer_profile import StreamerProfile
-from app.domain.entities.user import User
-from app.domain.value_objects.id import UserId
-from app.domain.value_objects.username import Username
+from app.domain.user.streamer_profile import StreamerProfile
+from app.domain.user.value_objects import UserId
 
 
 class StreamerProfileCommandGateway(Protocol):

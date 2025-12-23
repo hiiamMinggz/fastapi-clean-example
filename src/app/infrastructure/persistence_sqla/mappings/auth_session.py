@@ -1,7 +1,7 @@
 from sqlalchemy import UUID, Column, DateTime, String, Table
 from sqlalchemy.orm import composite
 
-from app.domain.value_objects.id import UserId
+from app.domain.user.value_objects import UserId
 from app.infrastructure.auth.session.model import AuthSession
 from app.infrastructure.persistence_sqla.registry import mapping_registry
 

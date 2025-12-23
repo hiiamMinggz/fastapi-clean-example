@@ -1,18 +1,19 @@
 from datetime import datetime, timezone
-from app.domain.entities.user import User
-from app.domain.enums.user_role import UserRole
+from app.domain.user.user import User
+from app.domain.user.user_role import UserRole
 
-from app.domain.enums.user_status import UserStatus
-from app.domain.ports.password_hasher import PasswordHasher
-from app.domain.ports.id_generator import IdGenerator
-from app.domain.value_objects.credibility import Credibility
-from app.domain.value_objects.raw_password import RawPassword
-from app.domain.value_objects.id import UserId
-from app.domain.value_objects.text import Email
-from app.domain.value_objects.token import Balance
-from app.domain.value_objects.user_password_hash import UserPasswordHash
-from app.domain.value_objects.username import Username
-from app.domain.value_objects.time import CreatedAt, UpdatedAt
+from app.domain.user.user_status import UserStatus
+from app.domain.user.value_objects import (
+    UserId,
+    UserPasswordHash,
+    Username,
+    Email,
+    Credibility,
+    RawPassword
+)
+from app.domain.shared.value_objects.time import CreatedAt, UpdatedAt
+from app.domain.user.ports import PasswordHasher
+from app.domain.shared.ports.id_generator import IdGenerator
 
 class UserService:
     def __init__(
@@ -31,26 +32,22 @@ class UserService:
     ) -> User:
 
         user_id = UserId(self._user_id_generator())
+        username = Username(username)
         password_hash = UserPasswordHash(self._password_hasher.hash(raw_password))
-        user_type = UserRole.VIEWER
-        staus = UserStatus.ACTIVE
-        inited_credibility = Credibility(Credibility.MAX_CREDIBILITY)
-        
+        email = Email(email)
         now = datetime.now(timezone.utc)
-        created_at = CreatedAt(now)
-        updated_at = UpdatedAt(now)
-        
+
         return User(
             id_=user_id,
             username=username,
             password_hash=password_hash,
             email=email,
-            user_type=user_type,
+            user_type=UserRole.VIEWER,
             locked=False,
-            status=staus,
-            credibility=inited_credibility,
-            created_at=created_at,
-            updated_at=updated_at,
+            status=UserStatus.ACTIVE,
+            credibility=Credibility(Credibility.MAX_CREDIBILITY),
+            created_at=CreatedAt(now),
+            updated_at=UpdatedAt(now),
         )
         
     def create_streamer(

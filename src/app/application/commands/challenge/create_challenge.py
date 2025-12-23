@@ -15,15 +15,18 @@ from app.application.common.ports.user_command_gateway import UserCommandGateway
 from app.application.common.ports.wallet_command_gateway import WalletCommandGateway
 from app.application.common.services.current_user import CurrentUserService
 
-from app.domain.enums.user_role import UserRole
-from app.domain.enums.user_status import UserStatus
-from app.domain.exceptions.base import DomainError
-from app.domain.services.challenge import ChallengeService
-from app.domain.services.wallet import WalletService
-from app.domain.value_objects.text import Title, Description
-from app.domain.value_objects.id import UserId
-from app.domain.value_objects.token import ChallengeAmount
-from app.domain.value_objects.time import ExpiresAt
+from app.domain.user.user_role import UserRole
+from app.domain.user.user_status import UserStatus
+from app.domain.base import DomainError
+from app.domain.challenge.service import ChallengeService
+from app.domain.wallet.service import WalletService
+from app.domain.challenge.value_objects import (
+    Title,
+    Description,
+    ChallengeAmount,
+)
+from app.domain.user.value_objects import UserId
+from app.domain.shared.value_objects.time import ExpiresAt
 
 log = logging.getLogger(__name__)
 

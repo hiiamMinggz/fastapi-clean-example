@@ -2,8 +2,8 @@ from dataclasses import dataclass
 from typing import ClassVar, Final
 from decimal import Decimal
 
-from app.domain.exceptions.base import DomainFieldError
-from app.domain.value_objects.base import ValueObject
+from app.domain.base import DomainFieldError
+from app.domain.base import ValueObject
 
 
 

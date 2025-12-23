@@ -2,6 +2,8 @@ from datetime import datetime, timezone
 from decimal import Decimal
 import logging
 from dataclasses import dataclass
+from typing import Optional
+from uuid import UUID
 
 from app.application.common.ports.flusher import Flusher
 from app.application.common.ports.transaction_manager import (
@@ -19,17 +21,17 @@ from app.application.common.services.authorization.permissions import (
     ChallengeManagementContext,
 )
 from app.application.common.services.current_user import CurrentUserService
-from app.domain.entities.challenge import Challenge
-from app.domain.exceptions.base import DomainError
-from app.domain.exceptions.challenge import ChallengeNotFoundByIdError
-from app.domain.services.challenge import ChallengeService
-from app.domain.value_objects.text import Title, Description
-from app.domain.value_objects.id import ChallengeId
-from typing import Optional
-from uuid import UUID
 
-from app.domain.value_objects.time import ExpiresAt, UpdatedAt
-from app.domain.value_objects.token import ChallengeAmount
+from app.domain.challenge.challenge import Challenge
+from app.domain.challenge.exceptions import ChallengeNotFoundByIdError
+from app.domain.challenge.service import ChallengeService
+from app.domain.challenge.value_objects import (
+    ChallengeId,
+    Title,
+    Description,
+    ChallengeAmount,
+)
+from app.domain.shared.value_objects.time import AcceptedAt, ExpiresAt, UpdatedAt
 
 log = logging.getLogger(__name__)
 

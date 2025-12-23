@@ -2,8 +2,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from app.domain.entities.user import User
-from app.domain.enums.user_role import UserRole
+from app.domain.user.user import User
+from app.domain.user.user_role import UserRole
 from app.domain.exceptions.user import (
     ActivationChangeNotPermittedError,
     RoleAssignmentNotPermittedError,

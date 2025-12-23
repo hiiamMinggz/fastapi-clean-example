@@ -1,5 +1,5 @@
 from app.domain.entities.base import Entity
-from app.domain.value_objects.id import UserId
+from app.domain.user.value_objects import UserId
 from app.domain.value_objects.token import StreamerChallengeFixedAmount
 from app.domain.value_objects.time import CreatedAt, UpdatedAt
 

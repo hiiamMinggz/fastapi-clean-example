@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from app.domain.value_objects.id import UserId
+from app.domain.user.value_objects import UserId
 from app.infrastructure.auth.exceptions import AuthenticationError
 from app.infrastructure.auth.session.constants import (
     AUTH_IS_UNAVAILABLE,
