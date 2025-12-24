@@ -3,8 +3,8 @@ from unittest.mock import MagicMock, create_autospec
 
 import pytest
 
-from app.domain.ports.password_hasher import PasswordHasher
-from app.domain.ports.id_generator import IdGenerator
+from app.domain.user.ports import PasswordHasher
+from app.domain.shared.ports.id_generator import IdGenerator
 
 
 @pytest.fixture

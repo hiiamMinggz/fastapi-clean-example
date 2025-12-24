@@ -75,7 +75,7 @@ class CreateUserInteractor:
         email = Email(request_data.email)
         password = RawPassword(request_data.password)
 
-        user = self._user_service.create_viewer(
+        user = self._user_service.create_user(
             username=username,
             email=email,
             raw_password=password,

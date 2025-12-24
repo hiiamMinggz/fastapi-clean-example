@@ -67,7 +67,7 @@ class ListUsersQueryService:
             CanManageRole(),
             context=RoleManagementContext(
                 subject=current_user,
-                target_role=UserRole.USER,
+                target_role=UserRole.VIEWER,
             ),
         )
 

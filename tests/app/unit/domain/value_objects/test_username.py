@@ -1,6 +1,6 @@
 import pytest
 
-from app.domain.exceptions.base import DomainFieldError
+from app.domain.base import DomainFieldError
 from app.domain.user.value_objects import Username
 
 

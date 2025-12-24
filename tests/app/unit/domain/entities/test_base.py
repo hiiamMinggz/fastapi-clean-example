@@ -1,7 +1,7 @@
 import pytest
 
-from app.domain.entities.base import Entity
-from app.domain.exceptions.base import DomainError
+from app.domain.base import Entity
+from app.domain.base import DomainError
 from tests.app.unit.factories.named_entity import (
     create_named_entity,
     create_named_entity_id,

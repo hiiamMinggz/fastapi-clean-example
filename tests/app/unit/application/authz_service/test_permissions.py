@@ -9,11 +9,11 @@ from app.application.common.services.authorization.permissions import (
 )
 from app.domain.user.user_role import UserRole
 from tests.app.unit.factories.user_entity import create_user
-from tests.app.unit.factories.value_objects import create_user_id
+from tests.app.unit.factories.value_objects import create_id
 
 
 def test_can_manage_self() -> None:
-    user_id = create_user_id()
+    user_id = create_id()
     subject = create_user(user_id=user_id)
     target = create_user(user_id=user_id)
     context = UserManagementContext(subject=subject, target=target)
@@ -23,9 +23,9 @@ def test_can_manage_self() -> None:
 
 
 def test_cannot_manage_another_user() -> None:
-    subject_id = create_user_id()
+    subject_id = create_id()
     subject = create_user(user_id=subject_id)
-    target_id = create_user_id()
+    target_id = create_id()
     target = create_user(user_id=target_id)
     context = UserManagementContext(subject=subject, target=target)
     sut = CanManageSelf()
@@ -36,9 +36,9 @@ def test_cannot_manage_another_user() -> None:
 @pytest.mark.parametrize(
     ("subject_role", "target_role"),
     [
-        (UserRole.SUPER_ADMIN, UserRole.ADMIN),
-        (UserRole.SUPER_ADMIN, UserRole.USER),
-        (UserRole.ADMIN, UserRole.USER),
+        (UserRole.SUPER_ADMIN, UserRole.SUPER_ADMIN),
+        (UserRole.SUPER_ADMIN, UserRole.VIEWER),
+        (UserRole.SUPER_ADMIN, UserRole.VIEWER),
     ],
 )
 def test_can_manage_subordinate(
@@ -57,9 +57,9 @@ def test_can_manage_subordinate(
     ("subject_role", "target_role"),
     [
         (UserRole.SUPER_ADMIN, UserRole.SUPER_ADMIN),
-        (UserRole.ADMIN, UserRole.SUPER_ADMIN),
-        (UserRole.ADMIN, UserRole.ADMIN),
-        (UserRole.USER, UserRole.ADMIN),
+        (UserRole.SUPER_ADMIN, UserRole.SUPER_ADMIN),
+        (UserRole.SUPER_ADMIN, UserRole.SUPER_ADMIN),
+        (UserRole.VIEWER, UserRole.SUPER_ADMIN),
     ],
 )
 def test_cannot_manage_non_subordinate(
@@ -77,9 +77,9 @@ def test_cannot_manage_non_subordinate(
 @pytest.mark.parametrize(
     ("subject_role", "target_role"),
     [
-        (UserRole.SUPER_ADMIN, UserRole.ADMIN),
-        (UserRole.SUPER_ADMIN, UserRole.USER),
-        (UserRole.ADMIN, UserRole.USER),
+        (UserRole.SUPER_ADMIN, UserRole.SUPER_ADMIN),
+        (UserRole.SUPER_ADMIN, UserRole.VIEWER),
+        (UserRole.SUPER_ADMIN, UserRole.VIEWER),
     ],
 )
 def test_can_manage_role(
@@ -97,9 +97,9 @@ def test_can_manage_role(
     ("subject_role", "target_role"),
     [
         (UserRole.SUPER_ADMIN, UserRole.SUPER_ADMIN),
-        (UserRole.ADMIN, UserRole.SUPER_ADMIN),
-        (UserRole.ADMIN, UserRole.ADMIN),
-        (UserRole.USER, UserRole.ADMIN),
+        (UserRole.SUPER_ADMIN, UserRole.SUPER_ADMIN),
+        (UserRole.SUPER_ADMIN, UserRole.SUPER_ADMIN),
+        (UserRole.VIEWER, UserRole.SUPER_ADMIN),
     ],
 )
 def test_cannot_manage_role(

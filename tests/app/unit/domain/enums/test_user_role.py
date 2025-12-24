@@ -6,8 +6,8 @@ from app.domain.user.user_role import UserRole
 @pytest.mark.parametrize(
     ("role", "expected"),
     [
-        (UserRole.USER, True),
-        (UserRole.ADMIN, True),
+        (UserRole.VIEWER, True),
+        (UserRole.SUPER_ADMIN, True),
         (UserRole.SUPER_ADMIN, False),
     ],
 )
@@ -18,8 +18,8 @@ def test_assignability(role: UserRole, expected: bool) -> None:
 @pytest.mark.parametrize(
     ("role", "expected"),
     [
-        (UserRole.USER, True),
-        (UserRole.ADMIN, True),
+        (UserRole.VIEWER, True),
+        (UserRole.SUPER_ADMIN, True),
         (UserRole.SUPER_ADMIN, False),
     ],
 )
