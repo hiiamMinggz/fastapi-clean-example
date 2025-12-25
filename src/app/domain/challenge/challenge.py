@@ -7,10 +7,9 @@ from app.domain.challenge.value_objects import (
     Title,
     Description,
     ChallengeAmount,
-    Status,
-    Fee,
 )
-
+from app.domain.shared.value_objects.fee import ChallengeFee
+from app.domain.challenge.challenge_status import Status
 class Challenge(Entity[ChallengeId]):
     def __init__(
         self,
@@ -21,7 +20,7 @@ class Challenge(Entity[ChallengeId]):
         created_by: UserId,
         assigned_to: UserId,
         amount: ChallengeAmount,
-        fee: Fee,
+        fee: ChallengeFee,
         streamer_fixed_amount: StreamerChallengeFixedAmount,
         status: Status,
         created_at: CreatedAt,

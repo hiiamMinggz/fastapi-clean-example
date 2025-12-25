@@ -13,7 +13,6 @@ class Token(ValueObject):
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
-        super(Token, self).__post_init__()
         self._validate_token_type(self.value)
     
     def __eq__(self, other: object) -> bool:

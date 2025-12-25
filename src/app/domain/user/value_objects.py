@@ -24,7 +24,6 @@ class Email(ValueObject):
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
-        super(Email, self).__post_init__()
         self._validate_email_length(self.value)
         self._validate_email_format(self.value)
 
@@ -54,7 +53,6 @@ class Credibility(ValueObject):
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
-        super(Credibility, self).__post_init__()
         self._validate_credibility(self.value)
 
     def _validate_credibility(self, credibility_value: float) -> None:
@@ -77,7 +75,6 @@ class RawPassword(ValueObject):
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
-        super(RawPassword, self).__post_init__()
         self._validate_password_length(self.value)
 
     def _validate_password_length(self, password_value: str) -> None:
@@ -122,7 +119,6 @@ class Username(ValueObject):
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
-        super(Username, self).__post_init__()
         self._validate_username_length(self.value)
         self._validate_username_pattern(self.value)
 

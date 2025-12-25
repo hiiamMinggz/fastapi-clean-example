@@ -34,7 +34,10 @@ class ValueObject:
         return object.__new__(cls)
 
     def __post_init__(self) -> None:
-        """Hook for additional initialization and ensuring invariants."""
+        """
+        Hook for additional initialization and ensuring invariants.
+        Attempts to check value's type and raise DomainFieldError if not valid.
+        """
 
     def __repr__(self) -> str:
         """
