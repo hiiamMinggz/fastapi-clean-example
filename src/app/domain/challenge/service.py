@@ -1,13 +1,21 @@
 from datetime import datetime, timezone
 from app.domain.challenge.challenge import Challenge
-from app.domain.value_objects.text import Title, Description
-from app.domain.value_objects.token import ChallengeAmount, StreamerChallengeFixedAmount
-from app.domain.value_objects.time import CreatedAt, ExpiresAt, AcceptedAt, UpdatedAt
-from app.domain.user.value_objects import UserId, ChallengeId
-from app.domain.enums.fee import Fee
+from app.domain.challenge.value_objects import (
+    ChallengeId,
+    Title,
+    Description,
+    ChallengeAmount,    
+)
+from app.domain.user.value_objects import (
+    UserId,
+    StreamerChallengeFixedAmount,
+)
 from app.domain.challenge.challenge_status import Status
-from app.domain.ports.id_generator import IdGenerator
-from app.domain.exceptions.base import DomainError
+from app.domain.shared.ports.id_generator import IdGenerator
+from app.domain.shared.value_objects.time import CreatedAt, ExpiresAt, AcceptedAt, UpdatedAt
+from app.domain.shared.value_objects.fee import ChallengeFee
+from app.domain.challenge.challenge_status import Status
+from app.domain.base import DomainError
 
 
 class ChallengeService:
@@ -17,7 +25,7 @@ class ChallengeService:
     def create_challenge(
             self,
             title: Title,
-            description: Description,
+            description: Description | None,
             created_by: UserId,
             assigned_to: UserId,
             amount: ChallengeAmount,
@@ -26,12 +34,8 @@ class ChallengeService:
          ) -> Challenge:
         
         challenge_id = ChallengeId(self.challenge_id_generator())
-        fee = Fee.DONE_CHALLENGE_FEE
-        status = Status.PENDING
         now = datetime.now(timezone.utc)
-        created_at = CreatedAt(now)
-        accepted_at = AcceptedAt(None)
-       
+
         challenge = Challenge(
             id_=challenge_id,
             title=title,
@@ -39,12 +43,12 @@ class ChallengeService:
             created_by=created_by,
             assigned_to=assigned_to,
             amount=amount,
-            fee=fee,
+            fee=ChallengeFee(ChallengeFee.DEFAULT_CHALLENGE_FEE),
             streamer_fixed_amount=streamer_fixed_amount,
-            status=status,
-            created_at=created_at,
+            status=Status.PENDING,
+            created_at=CreatedAt(now),
             expires_at=expires_at,
-            accepted_at=accepted_at,
+            accepted_at=None,
         )
         return challenge
 
@@ -64,7 +68,7 @@ class ChallengeService:
             challenge.updated_at = updated_at
         else:
             raise DomainError(
-                "Challenge title can only be updated for PENDING challenges"
+                "Challenge contents can only be updated for PENDING challenges"
             )
 
     def update_challenge_amount(

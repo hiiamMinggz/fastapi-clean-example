@@ -156,8 +156,6 @@ class Username(ValueObject):
 @dataclass(frozen=True, slots=True, repr=False)
 class StreamerChallengeFixedAmount(Token):
     """raises DomainFieldError"""
-    ZERO: ClassVar[Final[Decimal]] = Decimal("0.00")
-
     value: Decimal
 
     def __post_init__(self) -> None:

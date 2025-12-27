@@ -1,37 +1,37 @@
 from decimal import Decimal
 from datetime import datetime, timezone
 
+from app.domain.shared.ports.id_generator import IdGenerator
 from app.domain.shared.value_objects.token import Token
 from app.domain.shared.value_objects.time import CreatedAt, UpdatedAt
 from app.domain.base import DomainError
 
 from app.domain.wallet.wallet import Wallet
-from app.domain.wallet.value_objects import Balance
+from app.domain.wallet.value_objects import WalletId, Balance
 from app.domain.user.value_objects import UserId
 
 
 class WalletService:
-    def __init__(self) -> None:
-        pass
+    def __init__(self, wallet_id_generator: IdGenerator):
+        self._wallet_id_generator = wallet_id_generator
     
     def create_wallet(
         self,
-        user_id: UserId
+        owner_id: UserId,
     ) -> Wallet:
         """creates a new Wallet instance"""
-        inited_balance = Balance(Decimal("0.00"))
+        wallet_id = WalletId(self._wallet_id_generator())
         now = datetime.now(timezone.utc)
-        created_at = CreatedAt(now)
-        updated_at = UpdatedAt(now)
-        
+
         wallet = Wallet(
-            id_=user_id,
-            balance=inited_balance,
-            created_at=created_at,
-            updated_at=updated_at,
+            id_=wallet_id,
+            owner_id=owner_id,
+            balance=Balance(Balance.ZERO),
+            created_at=CreatedAt(now),
+            updated_at=UpdatedAt(now),
         )
         return wallet
-    
+
     def credit(self, wallet: Wallet, amount: Token) -> None:
         """credits the wallet with the specified amount"""
         if amount.value <= 0:
@@ -46,14 +46,8 @@ class WalletService:
             raise DomainError("Insufficient balance in wallet")
         wallet.balance -= amount
     
-    def transfer(self, from_wallet: Wallet, to_wallet: Wallet, amount: Token) -> None:
-        """transfers amount from one wallet to another"""
-        if from_wallet.id_ == to_wallet.id_:
-            raise DomainError("Cannot transfer to the same wallet")
-        if amount.value <= 0:
-            raise DomainError("Amount must be positive")
-        if from_wallet.balance < amount:
-            raise DomainError("Insufficient balance in source wallet")
-        
-        from_wallet.balance -= amount
-        to_wallet.balance += amount
+    @property
+    def balance(self, wallet: Wallet) -> Token:
+        """returns the balance of the wallet"""
+        return wallet.balance
+

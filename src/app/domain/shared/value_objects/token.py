@@ -1,16 +1,18 @@
 from dataclasses import dataclass
 from decimal import Decimal
 from functools import total_ordering
-from app.domain.base import ValueObject
+from typing import ClassVar, Final
+from app.domain.base import ValueObject, DomainFieldError
 
 
 @total_ordering
 @dataclass(frozen=True, slots=True, repr=False)
 class Token(ValueObject):
     """raises DomainFieldError"""
+    ZERO: ClassVar[Final[Decimal]] = Decimal("0.00")
     
     value: Decimal
-
+    
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
         self._validate_token_type(self.value)
