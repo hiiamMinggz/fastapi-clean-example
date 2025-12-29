@@ -32,6 +32,7 @@ class Transaction(Entity[TransactionId]):
 
     def validate(self) -> None:
         self._validate_amount(self.amount)
+        self._validate_transaction_direction()
         self._validate_transaction_flow(self.from_wallet_id)
 
     def _validate_amount(self, amount_value: Token) -> None:

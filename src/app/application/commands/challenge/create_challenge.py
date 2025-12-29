@@ -15,11 +15,14 @@ from app.application.common.ports.user_command_gateway import UserCommandGateway
 from app.application.common.ports.wallet_command_gateway import WalletCommandGateway
 from app.application.common.services.current_user import CurrentUserService
 
+from app.domain.ledger.account_type import AccountType
+from app.domain.shared.entities.transaction.transaction_type import TransactionType
 from app.domain.user.user_role import UserRole
-from app.domain.user.user_status import UserStatus
 from app.domain.base import DomainError
 from app.domain.challenge.service import ChallengeService
 from app.domain.wallet.service import WalletService
+from app.domain.shared.entities.transaction.service import TransactionService
+from app.domain.ledger.service import LedgerService
 from app.domain.challenge.value_objects import (
     Title,
     Description,
@@ -58,6 +61,8 @@ class CreateChallengeInteractor:
         current_user_service: CurrentUserService,
         challenge_service: ChallengeService,
         wallet_service: WalletService,
+        transaction_service: TransactionService,
+        ledger_service : LedgerService,
         challenge_command_gateway: ChallengeCommandGateway,
         streamer_profile_gateway: StreamerProfileCommandGateway,
         wallet_command_gateway: WalletCommandGateway,
@@ -68,6 +73,8 @@ class CreateChallengeInteractor:
         self._current_user_service = current_user_service
         self._challenge_service = challenge_service
         self._wallet_service = wallet_service
+        self._transaction_service = transaction_service
+        self._ledger_service = ledger_service
         self._challenge_command_gateway = challenge_command_gateway
         self._streamer_profile_gateway = streamer_profile_gateway
         self._user_command_gateway = user_command_gateway
@@ -89,39 +96,53 @@ class CreateChallengeInteractor:
         streamer_id = UserId(request_data.assigned_to)
         streamer = await self._user_command_gateway.read_by_id(streamer_id)
         
-        if not streamer or streamer.user_type != UserRole.STREAMER:
+        if not streamer or streamer.role != UserRole.STREAMER:
             raise DomainError("Assigned to is not a valid streamer")
-        if streamer.status != UserStatus.ACTIVE:
-            raise DomainError("Assigned streamer is not active")
-        
         streamer_profile = await self._streamer_profile_gateway.read_by_id(streamer_id)
+        challenge_amount = ChallengeAmount(Decimal(request_data.amount))
         
-        title = Title(request_data.title)
-        description = Description(request_data.description)
-        created_by = UserId(request_data.created_by)
-        amount = ChallengeAmount(Decimal(request_data.amount))
-        streamer_fixed_amount = streamer_profile.min_amount_challenge
-        expires_at = ExpiresAt(request_data.expires_at)
-
+        #create challenge
         challenge = self._challenge_service.create_challenge(
-            title=title,
-            description=description,
-            created_by=created_by,
+            title=Title(request_data.title),
+            description=Description(request_data.description),
+            created_by=UserId(request_data.created_by),
             assigned_to=streamer_id,
-            amount=amount,
-            streamer_fixed_amount=streamer_fixed_amount,
-            expires_at=expires_at,
+            amount=challenge_amount,
+            streamer_fixed_amount=streamer_profile.min_amount_challenge,
+            expires_at=ExpiresAt(request_data.expires_at),
         )
-        #TODO: transfer amount from creator's wallet to HOLDER wallet
+        #debit wallet
         current_user = await self._current_user_service.get_current_user()
-        current_user_wallet = await self._wallet_command_gateway.read_by_id(current_user.id_)
+        current_user_wallet = await self._wallet_command_gateway.read_by_id(current_user.id_) #select for update
         
-        self._wallet_service.transfer(
-            from_wallet=current_user_wallet,
-            to_wallet=..., # HOLDER wallet
-            amount=amount,
+        self._wallet_service.debit(
+            wallet=current_user_wallet,
+            amount = challenge_amount,
         )
-
+        # write transaction
+        transaction = self._transaction_service.create_transaction(
+            transaction_type=TransactionType.ESCROW_LOCK,
+            amount=challenge_amount,
+            from_wallet_id=current_user_wallet.id_,
+            to_wallet_id=None,
+            reference_id=challenge.id_,
+            metadata={"reason": "Challenge Created"},
+        )
+        # write double entry ledger
+        debit_entry = self._ledger_service.create_ledger_entry(
+            transaction_id=transaction.id_,
+            account_type=AccountType.USER_WALLET,
+            account_id=current_user_wallet.id_,
+            debit=challenge_amount,
+            credit=None,
+        )
+        credit_entry = self._ledger_service.create_ledger_entry(
+            transaction_id=transaction.id_,
+            account_type=AccountType.ESCROW,
+            account_id=None,
+            debit=None,
+            credit=challenge_amount,
+        )
         self._challenge_command_gateway.add(challenge)
 
         await self._flusher.flush()

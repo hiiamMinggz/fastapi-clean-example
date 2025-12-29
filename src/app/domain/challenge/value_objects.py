@@ -58,7 +58,7 @@ class Description(ValueObject):
 @dataclass(frozen=True, slots=True, repr=False)
 class ChallengeAmount(Token):
     """raises DomainFieldError"""
-    value: UUID
+    value: Decimal
     
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
