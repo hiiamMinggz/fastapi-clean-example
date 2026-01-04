@@ -11,7 +11,7 @@ from app.application.common.services.authorization.role_hierarchy import (
 from app.domain.user.user import User
 from app.domain.challenge.challenge import Challenge
 from app.domain.user.user_role import UserRole
-from app.domain.challenge.challenge_status import Status
+from app.domain.challenge.challenge_status import ChallengeStatus
 
 
 @dataclass(frozen=True, kw_only=True)

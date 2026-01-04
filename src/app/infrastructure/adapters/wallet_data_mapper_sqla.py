@@ -35,3 +35,23 @@ class SqlaWalletDataMapper(WalletCommandGateway):
         except SQLAlchemyError as error:
             raise DataMapperError(DB_QUERY_FAILED) from error
 
+    async def read_by_user_id(
+        self,
+        user_id: UserId,
+        for_update: bool = False,
+    ) -> Wallet | None:
+        """:raises DataMapperError:"""
+        select_stmt: Select[tuple[Wallet]] = select(Wallet).where(Wallet.id_ == user_id)  # type: ignore
+
+        if for_update:
+            select_stmt = select_stmt.with_for_update()
+
+        try:
+            wallet: Wallet | None = (
+                await self._session.execute(select_stmt)
+            ).scalar_one_or_none()
+
+            return wallet
+
+        except SQLAlchemyError as error:
+            raise DataMapperError(DB_QUERY_FAILED) from error

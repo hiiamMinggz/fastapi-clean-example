@@ -5,7 +5,7 @@ import pytest
 
 from app.domain.base import DomainError
 from app.domain.challenge.challenge import Challenge
-from app.domain.challenge.challenge_status import Status
+from app.domain.challenge.challenge_status import ChallengeStatus
 from app.domain.challenge.value_objects import ChallengeAmount, Description, Title
 from app.domain.shared.value_objects.fee import ChallengeFee
 from app.domain.shared.value_objects.time import CreatedAt, ExpiresAt
@@ -39,7 +39,7 @@ def test_challenge_initialization_sets_fields_and_validates() -> None:
         amount=amount,
         fee=ChallengeFee(ChallengeFee.DEFAULT_CHALLENGE_FEE),
         streamer_fixed_amount=streamer_amount,
-        status=Status.PENDING,
+        status=ChallengeStatus.PENDING,
         created_at=created_at,
         expires_at=expires_at,
         accepted_at=None,
@@ -49,7 +49,7 @@ def test_challenge_initialization_sets_fields_and_validates() -> None:
     assert challenge.title == title
     assert challenge.amount == amount
     assert challenge.streamer_fixed_amount == streamer_amount
-    assert challenge.status is Status.PENDING
+    assert challenge.status is ChallengeStatus.PENDING
     assert challenge.duration == timedelta(days=2)
 
 def test_challenge_initialization_with_empty_description() -> None:
@@ -68,7 +68,7 @@ def test_challenge_initialization_with_empty_description() -> None:
         amount=create_challenge_amount(),
         fee=ChallengeFee(ChallengeFee.DEFAULT_CHALLENGE_FEE),
         streamer_fixed_amount=create_streamer_fixed_amount(),
-        status=Status.PENDING,
+        status=ChallengeStatus.PENDING,
         created_at=created_at,
         expires_at=eexpires_at,
         accepted_at=None,
@@ -78,7 +78,7 @@ def test_challenge_initialization_with_empty_description() -> None:
     assert challenge.title == title
     assert challenge.amount == create_challenge_amount()
     assert challenge.streamer_fixed_amount == create_streamer_fixed_amount()
-    assert challenge.status is Status.PENDING
+    assert challenge.status is ChallengeStatus.PENDING
     assert challenge.duration == timedelta(days=1)
 
 def test_raises_when_amount_less_than_streamer_fixed_amount() -> None:

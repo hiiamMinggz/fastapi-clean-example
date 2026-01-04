@@ -1,59 +1,56 @@
+from typing import List
 from app.domain.base import DomainError, Entity
+from app.domain.shared.entities.ledger.ledger_entry import LedgerEntry
 from app.domain.shared.value_objects.time import CreatedAt
-from app.domain.wallet.value_objects import WalletId
 from app.domain.shared.entities.transaction.value_objects import TransactionId, ReferenceId
 from app.domain.shared.value_objects.token import Token
 from app.domain.shared.entities.transaction.transaction_type import TransactionType
 
 
 class Transaction(Entity[TransactionId]):
-
     def __init__(
         self,
         *,
         id_: TransactionId,
         transaction_type: TransactionType,
         amount: Token,
-        from_wallet_id: WalletId | None,
-        to_wallet_id: WalletId | None,
         reference_id: ReferenceId,
+        ledger_entries: List[LedgerEntry],
+        metadata: dict,
         created_at: CreatedAt,
-        metadata: dict
     ) -> None:
         super().__init__(id_=id_)
         self.transaction_type = transaction_type
         self.amount = amount
-        self.from_wallet_id = from_wallet_id
-        self.to_wallet_id = to_wallet_id
         self.reference_id = reference_id
-        self.created_at = created_at
+        self.ledger_entries = ledger_entries
         self.metadata = metadata
+        self.created_at = created_at
         self.validate()
 
     def validate(self) -> None:
-        self._validate_amount(self.amount)
-        self._validate_transaction_direction()
-        self._validate_transaction_flow(self.from_wallet_id)
+        self._validate_amount()
+        self._validate_ledger_entries()
+        self._validate_ledger_balance()
 
-    def _validate_amount(self, amount_value: Token) -> None:
-        if amount_value.value <= Token.ZERO:
+    def _validate_amount(self) -> None:
+        if self.amount.value <= Token.ZERO:
             raise DomainError(
-                f"Transaction amount must be greater than 0, but got {amount_value}.",
+                f"Transaction amount must be greater than 0, but got {self.amount}.",
             )
 
-    def _validate_transaction_direction(self) -> None:
-        if self.from_wallet_id == self.to_wallet_id:
-            raise DomainError("Transaction from_wallet_id must be different than to_wallet_id")
-        
-    def _validate_transaction_flow(self) -> None:
-        if self.transaction_type in (TransactionType.DEPOSIT, TransactionType.WITHDRAW, TransactionType.ESCROW_RELEASE):
-            if not isinstance(self.to_wallet_id, WalletId):
-                raise DomainError("to_wallet_id must be of type WalletId.")
-        elif self.transaction_type == TransactionType.TRANSFER:
-            if not all(isinstance(id, WalletId) for id in (self.from_wallet_id, self.to_wallet_id)):
-                raise DomainError("Both from_wallet_id and to_wallet_id must be of type WalletId.")
-        elif self.transaction_type == TransactionType.ESCROW_LOCK:
-            if not isinstance(self.from_wallet_id, WalletId):
-                raise DomainError("from_wallet_id must be of type WalletId.")
-        else:
-            raise DomainError("Invalid transaction type.")
+    def _validate_ledger_entries(self) -> None:
+        if not self.ledger_entries or len(self.ledger_entries) < 2:
+            raise DomainError(
+                "Transaction must have at least two ledger entries.",
+            )
+    
+    def _validate_ledger_balance(self) -> None:
+        total_debit = sum(entry.debit.value for entry in self.ledger_entries)
+        total_credit = sum(entry.credit.value for entry in self.ledger_entries)
+
+        if total_debit != total_credit:
+            raise DomainError(
+                f"Ledger entries are not balanced: total debit {total_debit} != total credit {total_credit}.",
+            )
+    

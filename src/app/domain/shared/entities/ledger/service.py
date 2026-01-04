@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
-from app.domain.ledger.account_type import AccountType
-from app.domain.ledger.ledger_entry import LedgerEntry
-from app.domain.ledger.value_objects import AccountId, EntryId
+from app.domain.shared.entities.ledger.account_type import AccountType
+from app.domain.shared.entities.ledger.ledger_entry import LedgerEntry
+from app.domain.shared.entities.ledger.value_objects import AccountId, EntryId
 from app.domain.shared.entities.transaction.value_objects import TransactionId
 from app.domain.shared.ports.id_generator import IdGenerator
 from app.domain.shared.value_objects.time import CreatedAt

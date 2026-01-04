@@ -1,7 +1,7 @@
 from enum import StrEnum
 
 
-class Status(StrEnum):
+class ChallengeStatus(StrEnum):
     PENDING = "pending"
     ACCEPTED = "accepted"
     STREAMER_REJECTED = "rejected"

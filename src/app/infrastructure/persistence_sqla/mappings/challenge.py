@@ -2,7 +2,7 @@ from sqlalchemy import UUID, Column, DateTime, Enum, Numeric, String, Table
 from sqlalchemy.orm import composite
 
 from app.domain.challenge.challenge import Challenge
-from app.domain.challenge.challenge_status import Status
+from app.domain.challenge.challenge_status import ChallengeStatus
 from app.domain.enums.fee import Fee
 from app.domain.shared.value_objects.id import ChallengeId, UserId
 from app.domain.value_objects.text import Title, Description
@@ -23,8 +23,8 @@ challenges_table = Table(
     Column("streamer_fixed_amount", Numeric(precision=12, scale=2), nullable=False),
     Column(
         "status",
-        Enum(Status, name="challengestatus"),
-        default=Status.PENDING,
+        Enum(ChallengeStatus, name="challengestatus"),
+        default=ChallengeStatus.PENDING,
         nullable=False,
     ),
     Column("created_at", DateTime(timezone=True), nullable=False),

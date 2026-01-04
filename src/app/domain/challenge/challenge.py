@@ -9,7 +9,7 @@ from app.domain.challenge.value_objects import (
     ChallengeAmount,
 )
 from app.domain.shared.value_objects.fee import ChallengeFee
-from app.domain.challenge.challenge_status import Status
+from app.domain.challenge.challenge_status import ChallengeStatus
 
 
 class Challenge(Entity[ChallengeId]):
@@ -24,7 +24,7 @@ class Challenge(Entity[ChallengeId]):
         amount: ChallengeAmount,
         fee: ChallengeFee,
         streamer_fixed_amount: StreamerChallengeFixedAmount,
-        status: Status,
+        status: ChallengeStatus,
         created_at: CreatedAt,
         expires_at: ExpiresAt,
         accepted_at: AcceptedAt | None,

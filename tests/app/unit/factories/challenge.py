@@ -4,7 +4,7 @@ from uuid import UUID
 import uuid6
 
 from app.domain.challenge.challenge import Challenge
-from app.domain.challenge.challenge_status import Status
+from app.domain.challenge.challenge_status import ChallengeStatus
 from app.domain.challenge.value_objects import (
     ChallengeAmount,
     ChallengeId,
@@ -65,7 +65,7 @@ def create_challenge(
     amount: ChallengeAmount | None = None,
     fee: ChallengeFee | None = None,
     streamer_fixed_amount: StreamerChallengeFixedAmount | None = None,
-    status: Status = Status.PENDING,
+    status: ChallengeStatus = ChallengeStatus.PENDING,
     created_at: CreatedAt | None = None,
     expires_at: ExpiresAt | None = None,
     accepted_at: AcceptedAt | None = None,

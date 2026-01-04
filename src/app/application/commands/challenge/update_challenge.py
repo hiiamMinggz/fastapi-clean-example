@@ -71,8 +71,9 @@ class UpdateChallengeInteractor:
             "Update challenge: started. Challenge ID: %s",
             request_data.challenge_id,
         )
-        challenge_id = ChallengeId(request_data.challenge_id)
         current_user = await self._current_user_service.get_current_user()
+
+        challenge_id = ChallengeId(request_data.challenge_id)
         challenge: Challenge | None = await self._challenge_command_gateway.read_by_id(challenge_id)
         if challenge is None:
             raise ChallengeNotFoundByIdError()
@@ -85,13 +86,11 @@ class UpdateChallengeInteractor:
                     challenge=challenge,
                 ),
             )
-            new_title = Title(request_data.title)
-            new_description = Description(request_data.description)
             
             self._challenge_service.update_challenge_content(
                 challenge=challenge,
-                title=new_title,
-                description=new_description,
+                title=Title(request_data.title),
+                description=Description(request_data.description),
             )
         if request_data.amount is not None:
             authorize(
@@ -101,10 +100,9 @@ class UpdateChallengeInteractor:
                     challenge=challenge,
                 ),
             )
-            new_amount = ChallengeAmount(request_data.amount)
             self._challenge_service.update_challenge_amount(
                 challenge=challenge,
-                amount=new_amount,
+                amount=ChallengeAmount(request_data.amount),
             )
         if request_data.expires_at is not None:
             authorize(
@@ -114,10 +112,9 @@ class UpdateChallengeInteractor:
                     challenge=challenge,
                 ),
             )
-            new_expires_at = ExpiresAt(request_data.expires_at)
             self._challenge_service.extend_challenge_deadline(
                 challenge=challenge,
-                expires_at=new_expires_at,
+                expires_at=ExpiresAt(request_data.expires_at),
             )
         
         await self._flusher.flush()
