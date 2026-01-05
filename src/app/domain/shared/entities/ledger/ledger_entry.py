@@ -10,7 +10,6 @@ class LedgerEntry(Entity[EntryId]):
         self,
         *, 
         id_: EntryId,
-        transaction_id: TransactionId,
         account_type: AccountType,
         account_id: AccountId | None,
         debit: Token,
@@ -18,7 +17,6 @@ class LedgerEntry(Entity[EntryId]):
         created_at: CreatedAt,
         ):
         super().__init__(id_=id_)
-        self.transaction_id = transaction_id
         self.account_type = account_type
         self.account_id = account_id
         self.debit = debit
@@ -33,5 +31,3 @@ class LedgerEntry(Entity[EntryId]):
         if self.debit.value == Token.ZERO and self.credit.value == Token.ZERO:
             raise ValueError("LedgerEntry must have debit or credit > 0")
         
-
-    

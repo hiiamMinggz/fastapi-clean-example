@@ -24,7 +24,7 @@ from app.domain.base import DomainError
 from app.domain.challenge.service import ChallengeService
 from app.domain.wallet.service import WalletService
 from app.domain.shared.entities.transaction.service import TransactionService
-from app.domain.ledger.service import LedgerService
+from app.domain.shared.entities.ledger.service import LedgerService
 from app.domain.challenge.value_objects import (
     Title,
     Description,
@@ -32,6 +32,7 @@ from app.domain.challenge.value_objects import (
 )
 from app.domain.user.value_objects import UserId
 from app.domain.shared.value_objects.time import ExpiresAt
+from app.domain.shared.value_objects.token import Token
 
 log = logging.getLogger(__name__)
 
@@ -68,7 +69,6 @@ class CreateChallengeInteractor:
         challenge_command_gateway: ChallengeCommandGateway,
         wallet_command_gateway: WalletCommandGateway,
         transaction_command_gateway: TransactionCommandGateway,
-        ledger_command_gateway: LedgerCommandGateway,
         flusher: Flusher,
         transaction_manager: TransactionManager,
     ):
@@ -82,7 +82,6 @@ class CreateChallengeInteractor:
         self._challenge_command_gateway = challenge_command_gateway
         self._wallet_command_gateway = wallet_command_gateway
         self._transaction_command_gateway = transaction_command_gateway
-        self._ledger_command_gateway = ledger_command_gateway
         self._flusher = flusher
         self._transaction_manager = transaction_manager
 
@@ -130,34 +129,29 @@ class CreateChallengeInteractor:
             wallet=current_user_wallet,
             amount = challenge_amount,
         )
+        # init double entry ledger
+        debit_entry = self._ledger_service.create_ledger_entry(
+            account_type=AccountType.USER_WALLET,
+            account_id=current_user_wallet.id_,
+            debit=challenge_amount,
+            credit=Token(Token.ZERO),
+        )
+        credit_entry = self._ledger_service.create_ledger_entry(
+            account_type=AccountType.ESCROW,
+            account_id=None,
+            debit=Token(Token.ZERO),
+            credit=challenge_amount,
+        )
         # write transaction
         transaction = self._transaction_service.create_transaction(
             transaction_type=TransactionType.ESCROW_LOCK,
             amount=challenge_amount,
-            from_wallet_id=current_user_wallet.id_,
-            to_wallet_id=None, #to escrow
             reference_id=challenge.id_,
+            ledger_entries=[debit_entry, credit_entry],
             metadata={"reason": "Challenge Created"},
-        )
-        # write double entry ledger
-        debit_entry = self._ledger_service.create_ledger_entry(
-            transaction_id=transaction.id_,
-            account_type=AccountType.USER_WALLET,
-            account_id=current_user_wallet.id_,
-            debit=challenge_amount,
-            credit=None,
-        )
-        credit_entry = self._ledger_service.create_ledger_entry(
-            transaction_id=transaction.id_,
-            account_type=AccountType.ESCROW,
-            account_id=None,
-            debit=None,
-            credit=challenge_amount,
         )
         self._challenge_command_gateway.add(challenge)
         self._transaction_command_gateway.add(transaction)
-        self._ledger_command_gateway.add(debit_entry)
-        self._ledger_command_gateway.add(credit_entry) 
         
         await self._flusher.flush()
         await self._transaction_manager.commit()

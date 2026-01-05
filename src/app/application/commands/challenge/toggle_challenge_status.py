@@ -2,7 +2,6 @@ import logging
 from dataclasses import dataclass
 
 from app.application.common.ports.flusher import Flusher
-from app.application.common.ports.ledger_command_gateway import LedgerCommandGateway
 from app.application.common.ports.transaction_command_gateway import TransactionCommandGateway
 from app.application.common.ports.transaction_manager import (
     TransactionManager,
@@ -26,10 +25,11 @@ from uuid import UUID
 from datetime import datetime, timezone
 
 from app.domain.shared.entities.ledger.account_type import AccountType
-from app.domain.ledger.service import LedgerService
+from app.domain.shared.entities.ledger.service import LedgerService
 from app.domain.shared.entities.transaction.service import TransactionService
 from app.domain.shared.entities.transaction.transaction_type import TransactionType
 from app.domain.shared.value_objects.time import AcceptedAt, UpdatedAt
+from app.domain.shared.value_objects.token import Token
 from app.domain.wallet.service import WalletService
 log = logging.getLogger(__name__)
 
@@ -51,7 +51,6 @@ class ToggleChallengeStatusInteractor:
         challenge_command_gateway: ChallengeCommandGateway,
         wallet_command_gateway: WalletCommandGateway,
         transaction_command_gateway: TransactionCommandGateway,
-        ledger_command_gateway: LedgerCommandGateway,
         flusher: Flusher,
         transaction_manager: TransactionManager,
     ):
@@ -63,7 +62,6 @@ class ToggleChallengeStatusInteractor:
         self._challenge_command_gateway = challenge_command_gateway
         self._wallet_command_gateway = wallet_command_gateway
         self._transaction_command_gateway = transaction_command_gateway
-        self._ledger_command_gateway = ledger_command_gateway
         self._flusher = flusher
         self._transaction_manager = transaction_manager
 
@@ -103,11 +101,11 @@ class ToggleChallengeStatusInteractor:
                 challenge=challenge,
             )
         elif new_status == ChallengeStatus.STREAMER_REJECTED:
-            # Refund full amount to viewer
+            # update challenge status
             self._challenge_service.streamer_reject_challenge(
                 challenge=challenge,
             )
-            
+            # refund full amount to viewer
             viewer_wallet = await self._wallet_command_gateway.read_by_user_id(
                 challenge.assigned_to,
                 for_update=True,
@@ -116,28 +114,26 @@ class ToggleChallengeStatusInteractor:
                 wallet=viewer_wallet,
                 amount=challenge.amount
             )
+            # init double entry ledger
+            debit_entry = self._ledger_service.create_ledger_entry(
+                account_type=AccountType.ESCROW,
+                account_id=None,  # ESCROW account
+                debit=challenge.amount,
+                credit=Token(Token.ZERO),
+            )
+            credit_entry = self._ledger_service.create_ledger_entry(
+                account_type=AccountType.USER_WALLET,
+                account_id=viewer_wallet.id_,
+                debit=Token(Token.ZERO),
+                credit=challenge.amount,
+            )
             
             transaction = self._transaction_service.create_transaction(
                 transaction_type=TransactionType.ESCROW_RELEASE,
                 amount=challenge.amount,
-                from_wallet_id=None,
-                to_wallet_id=viewer_wallet.id_,
                 reference_id=challenge.id_,
+                ledger_entries=[debit_entry, credit_entry],
                 metadata={"reason": "Challenge Rejected by Streamer"},
-            )
-            debit_entry = self._ledger_service.create_ledger_entry(
-                transaction_id=transaction.id_,
-                account_type=AccountType.ESCROW,
-                account_id=None,  # ESCROW account
-                debit=challenge.amount,
-                credit=None,
-            )
-            credit_entry = self._ledger_service.create_ledger_entry(
-                transaction_id=transaction.id_,
-                account_type=AccountType.USER_WALLET,
-                account_id=viewer_wallet.id_,
-                debit=None,
-                credit=challenge.amount,
             )
             
         elif new_status == ChallengeStatus.VIEWER_REJECTED:
@@ -148,7 +144,7 @@ class ToggleChallengeStatusInteractor:
 
             current_duration = now - challenge.created_at.value
             if current_duration <= challenge.duration * 0.3:
-                # Refund full amount to viewer
+                # refund full amount to viewer
                 viewer_wallet = await self._wallet_command_gateway.read_by_user_id(
                     challenge.assigned_to,
                     for_update=True,
@@ -157,29 +153,28 @@ class ToggleChallengeStatusInteractor:
                     wallet=viewer_wallet,
                     amount=challenge.amount
                 )
+                # init double entry ledger
+                debit_entry = self._ledger_service.create_ledger_entry(
+                    account_type=AccountType.ESCROW,
+                    account_id=None,  # ESCROW account
+                    debit=challenge.amount,
+                    credit=Token(Token.ZERO),
+                )
+                credit_entry = self._ledger_service.create_ledger_entry(
+                    account_type=AccountType.USER_WALLET,
+                    account_id=viewer_wallet.id_,
+                    debit=Token(Token.ZERO),
+                    credit=challenge.amount,
+                )
                 
                 transaction = self._transaction_service.create_transaction(
                     transaction_type=TransactionType.ESCROW_RELEASE,
                     amount=challenge.amount,
-                    from_wallet_id=None,
-                    to_wallet_id=viewer_wallet.id_,
                     reference_id=challenge.id_,
-                    metadata={"reason": "Challenge Rejected by Viewer"},
+                    ledger_entries=[debit_entry, credit_entry],
+                    metadata={"reason": "Challenge Rejected by Streamer"},
                 )
-                debit_entry = self._ledger_service.create_ledger_entry(
-                    transaction_id=transaction.id_,
-                    account_type=AccountType.ESCROW,
-                    account_id=None,  # ESCROW account
-                    debit=challenge.amount,
-                    credit=None,
-                )
-                credit_entry = self._ledger_service.create_ledger_entry(
-                    transaction_id=transaction.id_,
-                    account_type=AccountType.USER_WALLET,
-                    account_id=viewer_wallet.id_,
-                    debit=None,
-                    credit=challenge.amount,
-                )
+                
             elif current_duration >= challenge.duration:
                 # Refund 90% to viewer and 10% to EARNER wallet
                 dareus_earn = challenge.amount * 0.1
@@ -193,33 +188,35 @@ class ToggleChallengeStatusInteractor:
                     wallet=viewer_wallet,
                     amount=challenge.amount
                 )
-                
-                transaction = self._transaction_service.create_transaction(
-                    transaction_type=TransactionType.ESCROW_RELEASE,
-                    amount=challenge.amount,
-                    from_wallet_id=None,
-                    to_wallet_id=viewer_wallet.id_,
-                    reference_id=challenge.id_,
-                    metadata={"reason": "Challenge Rejected by Viewer"},
-                )
+                #debit ESCROW
                 debit_entry = self._ledger_service.create_ledger_entry(
-                    transaction_id=transaction.id_,
                     account_type=AccountType.ESCROW,
                     account_id=None,  # ESCROW account
                     debit=challenge.amount,
-                    credit=None,
+                    credit=Token(Token.ZERO),
                 )
                 # credit earner
-                credit_entry = self._ledger_service.create_ledger_entry()
+                credit_commission_entry = self._ledger_service.create_ledger_entry(
+                    account_type=AccountType.COMMISSION,
+                    account_id=None,
+                    debit=Token(Token.ZERO),
+                    credit=dareus_earn,
+                )
                 #credit user_wallet
                 credit_entry = self._ledger_service.create_ledger_entry(
-                    transaction_id=transaction.id_,
                     account_type=AccountType.USER_WALLET,
                     account_id=viewer_wallet.id_,
-                    debit=None,
-                    credit=challenge.amount,
+                    debit=Token(Token.ZERO),
+                    credit=viewer_get_back,
                 )
-                
+                #write transaction
+                transaction = self._transaction_service.create_transaction(
+                    transaction_type=TransactionType.ESCROW_RELEASE,
+                    amount=challenge.amount,
+                    reference_id=challenge.id_,
+                    ledger_entries=[debit_entry, credit_commission_entry, credit_entry],
+                    metadata={"reason": "Challenge Rejected by Streamer"},
+                )
             else:
                 # Refund 70% to viewer and 10% to EARNER wallet and 20% to streamer
                 dareus_earn = challenge.amount * Fee.FAIL_CHALLENGE_FEE.value
@@ -270,8 +267,6 @@ class ToggleChallengeStatusInteractor:
             )
         
         self._transaction_command_gateway.add(transaction)
-        self._ledger_command_gateway.add(debit_entry)
-        self._ledger_command_gateway.add(credit_entry)
         await self._flusher.flush()
         await self._transaction_manager.commit()
 

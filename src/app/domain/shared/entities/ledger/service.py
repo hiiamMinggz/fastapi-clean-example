@@ -15,11 +15,10 @@ class LedgerService:
     def create_ledger_entry(
         self,
         *,
-        transaction_id: TransactionId,
         account_type: AccountType,
         account_id: AccountId | None,
-        debit: Token | None,
-        credit: Token | None,
+        debit: Token,
+        credit: Token,
     ) -> LedgerEntry:
         """creates a new Ledger instance"""
         entry_id = EntryId(self._ledger_entry_id_generator())
@@ -27,7 +26,6 @@ class LedgerService:
         
         entry = LedgerEntry(
             id_=entry_id,
-            transaction_id=transaction_id,
             account_type=account_type,
             account_id=account_id,
             debit=debit,
