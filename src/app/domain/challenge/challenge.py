@@ -55,9 +55,9 @@ class Challenge(Entity[ChallengeId]):
             )
 
     def _time_validation(self) -> None:
-        if self.created_at > self.expires_at:
+        if self.expires_at <= self.created_at:
             raise DomainError(
-                f"Challenge created at must be less than or equal to expires at, but got {self.created_at} and {self.expires_at}.",
+                f"Challenge expires at must be greater than created at, but got {self.expires_at} and {self.created_at}.",
             )
     
     def _creator_validation(self) -> None:

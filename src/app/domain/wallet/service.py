@@ -37,6 +37,7 @@ class WalletService:
         if amount.value <= 0:
             raise DomainError("Amount must be positive")
         wallet.balance += amount
+        wallet.updated_at = UpdatedAt(datetime.now(timezone.utc))
         
     def debit(self, wallet: Wallet, amount: Token) -> None:
         """debits the wallet with the specified amount"""
@@ -45,9 +46,9 @@ class WalletService:
         if wallet.balance < amount:
             raise DomainError("Insufficient balance in wallet")
         wallet.balance -= amount
+        wallet.updated_at = UpdatedAt(datetime.now(timezone.utc))
     
     @property
     def balance(self, wallet: Wallet) -> Token:
         """returns the balance of the wallet"""
         return wallet.balance
-

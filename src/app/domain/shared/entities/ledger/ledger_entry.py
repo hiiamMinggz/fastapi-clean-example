@@ -14,14 +14,12 @@ class LedgerEntry(Entity[EntryId]):
         account_id: AccountId | None,
         debit: Token,
         credit: Token,
-        created_at: CreatedAt,
         ):
         super().__init__(id_=id_)
         self.account_type = account_type
         self.account_id = account_id
         self.debit = debit
         self.credit = credit
-        self.created_at = created_at
         self.validate()
     
     def validate(self) -> None:

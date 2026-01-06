@@ -15,7 +15,7 @@ class StreamerProfile(Entity[UserId]):
         min_amount_challenge: StreamerChallengeFixedAmount,
         disable_challenges: bool,
         created_at: CreatedAt,
-        updated_at: UpdatedAt,
+        updated_at: UpdatedAt | None,
     ) -> None:
         super().__init__(id_=id_)
         self.channel_name = channel_name

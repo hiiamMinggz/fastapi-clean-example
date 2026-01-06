@@ -21,7 +21,7 @@ class User(Entity[UserId]):
         is_active: bool,
         credibility: Credibility,
         created_at: CreatedAt,
-        updated_at: UpdatedAt,
+        updated_at: UpdatedAt | None,
     ) -> None:
         super().__init__(id_=id_)
         self.username = username

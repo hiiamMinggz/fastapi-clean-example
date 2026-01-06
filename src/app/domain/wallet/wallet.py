@@ -11,7 +11,7 @@ class Wallet(Entity[WalletId]):
         owner_id: UserId,
         balance: Balance,
         created_at: CreatedAt,
-        updated_at: UpdatedAt,
+        updated_at: UpdatedAt | None,
     ) -> None:
         super().__init__(id_=id_)
         self.owner_id = owner_id

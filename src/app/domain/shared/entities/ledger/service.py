@@ -22,7 +22,6 @@ class LedgerService:
     ) -> LedgerEntry:
         """creates a new Ledger instance"""
         entry_id = EntryId(self._ledger_entry_id_generator())
-        now = datetime.now(timezone.utc)
         
         entry = LedgerEntry(
             id_=entry_id,
@@ -30,7 +29,109 @@ class LedgerService:
             account_id=account_id,
             debit=debit,
             credit=credit,
-            created_at=CreatedAt(now),
         )
         return entry
     
+    def create_bank_debit_entry(
+        self,
+        *,
+        debit: Token,
+    ) -> LedgerEntry:
+        """creates a new Ledger instance"""
+        entry_id = EntryId(self._ledger_entry_id_generator())        
+        
+        entry = LedgerEntry(
+            id_=entry_id,
+            account_type=AccountType.BANK,
+            account_id=None,
+            debit=debit,
+            credit=Token(Token.ZERO),
+        )
+        return entry
+    
+    def create_escrow_debit_entry(
+        self,
+        *,
+        debit: Token,
+    ) -> LedgerEntry:
+        """creates a new Ledger instance"""
+        entry_id = EntryId(self._ledger_entry_id_generator())
+        
+        entry = LedgerEntry(
+            id_=entry_id,
+            account_type=AccountType.ESCROW,
+            account_id=None,
+            debit=debit,
+            credit=Token(Token.ZERO),
+        )
+        return entry
+    
+    def create_escrow_credit_entry(
+        self,
+        *,
+        credit: Token,
+    ) -> LedgerEntry:
+        """creates a new Ledger instance"""
+        entry_id = EntryId(self._ledger_entry_id_generator())
+        
+        entry = LedgerEntry(
+            id_=entry_id,
+            account_type=AccountType.ESCROW,
+            account_id=None,
+            debit=Token(Token.ZERO),
+            credit=credit,
+        )
+        return entry
+    
+    def create_user_wallet_debit_entry(
+        self,
+        *,
+        account_id: AccountId,
+        debit: Token,
+    ) -> LedgerEntry:
+        """creates a new Ledger instance"""
+        entry_id = EntryId(self._ledger_entry_id_generator())
+        
+        entry = LedgerEntry(
+            id_=entry_id,
+            account_type=AccountType.USER_WALLET,
+            account_id=account_id,
+            debit=debit,
+            credit=Token(Token.ZERO),
+        )
+        return entry
+    
+    def create_user_wallet_credit_entry(
+        self,
+        *,
+        account_id: AccountId,
+        credit: Token,
+    ) -> LedgerEntry:
+        """creates a new Ledger instance"""
+        entry_id = EntryId(self._ledger_entry_id_generator())
+        
+        entry = LedgerEntry(
+            id_=entry_id,
+            account_type=AccountType.USER_WALLET,
+            account_id=account_id,
+            debit=Token(Token.ZERO),
+            credit=credit,
+        )
+        return entry
+    
+    def create_commission_credit_entry(
+        self,
+        *,
+        credit: Token,
+    ) -> LedgerEntry:
+        """creates a new Ledger instance"""
+        entry_id = EntryId(self._ledger_entry_id_generator())
+        
+        entry = LedgerEntry(
+            id_=entry_id,
+            account_type=AccountType.COMMISSION,
+            account_id=None,
+            debit=Token(Token.ZERO),
+            credit=credit,
+        )
+        return entry
