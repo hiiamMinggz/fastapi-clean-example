@@ -81,3 +81,13 @@ class DeletedAt(Time):
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
         super(DeletedAt, self).__post_init__()
+
+@dataclass(frozen=True, slots=True, repr=False)
+class VerifiedAt(Time):
+    """raises DomainFieldError"""
+
+    value: datetime
+
+    def __post_init__(self) -> None:
+        """:raises DomainFieldError:"""
+        super(VerifiedAt, self).__post_init__()

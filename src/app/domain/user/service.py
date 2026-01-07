@@ -14,6 +14,8 @@ from app.domain.shared.value_objects.time import CreatedAt, UpdatedAt
 from app.domain.user.ports import PasswordHasher
 from app.domain.shared.ports.id_generator import IdGenerator
 from app.domain.user.exceptions import ActivationChangeNotPermittedError, RoleAssignmentNotPermittedError, RoleChangeNotPermittedError
+
+
 class UserService:
     def __init__(
         self,
@@ -23,20 +25,16 @@ class UserService:
         self._user_id_generator = user_id_generator
         self._password_hasher = password_hasher
 
-    def create_user(
+    def create_viewer(
         self,
         *,
         username: Username,
         raw_password: RawPassword,
         email: Email,
-        role: UserRole,
     ) -> User:
-        if not role.is_assignable:
-            raise RoleAssignmentNotPermittedError(role)
         
         user_id = UserId(self._user_id_generator())
         password_hash = UserPasswordHash(self._password_hasher.hash(raw_password))
-
         now = datetime.now(timezone.utc)
 
         return User(
@@ -44,7 +42,30 @@ class UserService:
             username=username,
             email=email,
             password_hash=password_hash,
-            role=role,
+            role=UserRole.VIEWER,
+            is_active=True,
+            credibility=Credibility(Credibility.MAX_CREDIBILITY),
+            created_at=CreatedAt(now),
+            updated_at=UpdatedAt(now),
+        )
+    
+    def apply_as_streamer(
+        self,
+        user: User,
+        *,
+        streamer_profile: StreamerProfile,
+    ) -> User:
+        
+        user_id = UserId(self._user_id_generator())
+        password_hash = UserPasswordHash(self._password_hasher.hash(raw_password))
+        now = datetime.now(timezone.utc)
+
+        return User(
+            id_=user_id,
+            username=username,
+            email=email,
+            password_hash=password_hash,
+            role=UserRole.STREAMER,
             is_active=True,
             credibility=Credibility(Credibility.MAX_CREDIBILITY),
             created_at=CreatedAt(now),

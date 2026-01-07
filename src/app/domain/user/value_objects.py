@@ -13,6 +13,16 @@ class UserId(ValueObject):
 
 
 @dataclass(frozen=True, slots=True, repr=False)
+class StreamerId(ValueObject):
+    value: UUID
+
+
+@dataclass(frozen=True, slots=True, repr=False, kw_only=True)
+class VerifiedBy(ValueObject):
+    value: UUID
+
+
+@dataclass(frozen=True, slots=True, repr=False)
 class Email(ValueObject):
     """raises DomainFieldError"""
     
@@ -42,6 +52,7 @@ class Email(ValueObject):
             raise DomainFieldError(
                 "Email format is invalid.",
             )
+
 
 @dataclass(frozen=True, slots=True, repr=False)
 class Credibility(ValueObject):
