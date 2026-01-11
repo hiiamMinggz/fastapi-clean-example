@@ -21,7 +21,7 @@ streamers_table = Table(
     Column("disable_challenges", Boolean, default=False, nullable=False),
     Column("created_at", DateTime(timezone=True), nullable=False),
     Column("updated_at", DateTime(timezone=True), nullable=False),
-    Column("verified_at", DateTime(timezone=True), nullable=False),
+    Column("verified_at", DateTime(timezone=True), nullable=True),
     Column("verified_by", UUID(as_uuid=True), nullable=True),
 )
 

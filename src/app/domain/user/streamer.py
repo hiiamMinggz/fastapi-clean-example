@@ -14,7 +14,7 @@ class Streamer(Entity[StreamerId]):
         created_at: CreatedAt,
         updated_at: UpdatedAt,
         verified_at: VerifiedAt,
-        verified_by: VerifiedBy | None,
+        verified_by: VerifiedBy,
     ) -> None:
         super().__init__(id_=id_)
         self.user_id = user_id

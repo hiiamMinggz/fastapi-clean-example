@@ -5,13 +5,21 @@ meta {
 }
 
 patch {
-  url: {{host}}/api/v1/challenges/{challenge_id}/toggle-status
+  url: {{host}}/api/v1/challenges/:challenge_id/toggle-status
   body: json
   auth: inherit
 }
 
+params:path {
+  challenge_id: 019bac56-b020-780a-b5f3-1e00490057ca
+}
+
 body:json {
   "viewer_rejected"
+}
+
+vars:pre-request {
+  challenge_id: 019bac56-b020-780a-b5f3-1e00490057ca
 }
 
 settings {
