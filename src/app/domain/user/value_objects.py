@@ -17,9 +17,9 @@ class StreamerId(ValueObject):
     value: UUID
 
 
-@dataclass(frozen=True, slots=True, repr=False, kw_only=True)
+@dataclass(frozen=True, slots=True, repr=False)
 class VerifiedBy(ValueObject):
-    value: UUID
+    value: UUID | None
 
 
 @dataclass(frozen=True, slots=True, repr=False)

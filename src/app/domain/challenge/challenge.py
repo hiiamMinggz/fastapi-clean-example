@@ -18,7 +18,7 @@ class Challenge(Entity[ChallengeId]):
         *,
         id_: ChallengeId,
         title: Title,
-        description: Description | None,
+        description: Description,
         created_by: UserId,
         assigned_to: UserId,
         amount: ChallengeAmount,
@@ -27,7 +27,7 @@ class Challenge(Entity[ChallengeId]):
         status: ChallengeStatus,
         created_at: CreatedAt,
         expires_at: ExpiresAt,
-        accepted_at: AcceptedAt | None,
+        accepted_at: AcceptedAt,
     ) -> None:
         super().__init__(id_=id_)
         self.title = title
@@ -67,7 +67,7 @@ class Challenge(Entity[ChallengeId]):
             )
     
     def _accepted_validation(self) -> None:
-        if self.accepted_at is not None and self.accepted_at.value > self.expires_at.value:
+        if self.accepted_at.value is not None and self.accepted_at.value > self.expires_at.value:
             raise DomainError(
                 f"Challenge accepted at must be less than or equal to expires at, but got {self.accepted_at} and {self.expires_at}.",
             )

@@ -60,6 +60,8 @@ class AcceptedAt(Time):
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
+        if self.value is None:
+            return
         super(AcceptedAt, self).__post_init__()
         
 @dataclass(frozen=True, slots=True, repr=False)
@@ -90,4 +92,6 @@ class VerifiedAt(Time):
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
+        if self.value is None:
+            return
         super(VerifiedAt, self).__post_init__()

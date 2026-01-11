@@ -26,7 +26,7 @@ def create_user(
     is_active: bool = True,
     credibility: Credibility | None = None,
     created_at: CreatedAt | None = None,
-    updated_at: UpdatedAt | None = None,
+    updated_at: UpdatedAt = None,
 ) -> User:
     now = datetime.now()
     return User(

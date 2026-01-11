@@ -5,7 +5,7 @@ from uuid import UUID
 from datetime import datetime, timezone
 from decimal import Decimal
 from app.application.common.ports.flusher import Flusher
-from app.application.common.ports.streamer_profile_command_gateway import StreamerProfileCommandGateway
+from app.application.common.ports.streamer_command_gateway import StreamerCommandGateway
 from app.application.common.ports.transaction_command_gateway import TransactionCommandGateway
 from app.application.common.ports.transaction_manager import (
     TransactionManager,
@@ -18,6 +18,7 @@ from app.application.common.services.current_user import CurrentUserService
 
 from app.domain.shared.entities.ledger.account_type import AccountType
 from app.domain.shared.entities.transaction.transaction_type import TransactionType
+from app.domain.user.streamer import Streamer
 from app.domain.user.user_role import UserRole
 from app.domain.base import DomainError
 from app.domain.challenge.service import ChallengeService
@@ -64,7 +65,7 @@ class CreateChallengeInteractor:
         transaction_service: TransactionService,
         ledger_service : LedgerService,
         user_command_gateway: UserCommandGateway,
-        streamer_profile_gateway: StreamerProfileCommandGateway,
+        streamer_gateway: StreamerCommandGateway,
         challenge_command_gateway: ChallengeCommandGateway,
         wallet_command_gateway: WalletCommandGateway,
         transaction_command_gateway: TransactionCommandGateway,
@@ -77,7 +78,7 @@ class CreateChallengeInteractor:
         self._transaction_service = transaction_service
         self._ledger_service = ledger_service
         self._user_command_gateway = user_command_gateway
-        self._streamer_profile_gateway = streamer_profile_gateway
+        self._streamer_gateway = streamer_gateway
         self._challenge_command_gateway = challenge_command_gateway
         self._wallet_command_gateway = wallet_command_gateway
         self._transaction_command_gateway = transaction_command_gateway
@@ -95,13 +96,18 @@ class CreateChallengeInteractor:
         log.info("Create challenge: started.")
         #get current user
         current_user = await self._current_user_service.get_current_user()
+        current_user_wallet = await self._wallet_command_gateway.read_by_user_id(
+            current_user.id_,
+            for_update=True,
+        )
+        if current_user_wallet is None:
+            raise DomainError("Current user wallet not found")
 
         #check assigned_to is a valid streamer
         streamer_id = UserId(request_data.assigned_to)
-        streamer = await self._user_command_gateway.read_by_id(streamer_id)
-        streamer_profile = await self._streamer_profile_gateway.read_by_id(streamer_id)
-        
-        if streamer is None or streamer_profile is None or streamer.role != UserRole.STREAMER:
+        streamer: Streamer | None = await self._streamer_gateway.read_by_id(streamer_id)
+
+        if streamer is None or streamer.disable_challenges:
             raise DomainError("Assigned to is not a valid streamer")
         
         challenge_amount = ChallengeAmount(request_data.amount)
@@ -113,17 +119,10 @@ class CreateChallengeInteractor:
             created_by=current_user.id_,
             assigned_to=streamer_id,
             amount=challenge_amount,
-            streamer_fixed_amount=streamer_profile.min_amount_challenge,
+            streamer_fixed_amount=streamer.min_amount_challenge,
             expires_at=ExpiresAt(request_data.expires_at),
         )
         #debit wallet
-        current_user_wallet = await self._wallet_command_gateway.read_by_user_id(
-            current_user.id_,
-            for_update=True,
-        )
-        if current_user_wallet is None:
-            raise DomainError("Current user wallet not found")
-        
         self._wallet_service.debit(
             wallet=current_user_wallet,
             amount = challenge_amount,

@@ -3,22 +3,14 @@ from fastapi import APIRouter
 from app.presentation.http.controllers.users.activate_user import (
     create_activate_user_router,
 )
+from app.presentation.http.controllers.users.apply_as_streamer import create_apply_as_streamer_router
 from app.presentation.http.controllers.users.change_password import (
     create_change_password_router,
-)
-from app.presentation.http.controllers.users.create_user import (
-    create_user_router,
 )
 from app.presentation.http.controllers.users.deactivate_user import (
     create_deactivate_user_router,
 )
-from app.presentation.http.controllers.users.grant_streamer import (
-    create_grant_streamer_router,
-)
 from app.presentation.http.controllers.users.list_users import create_list_users_router
-from app.presentation.http.controllers.users.revoke_streamer import (
-    create_revoke_streamer_router,
-)
 
 
 def create_users_router() -> APIRouter:
@@ -28,13 +20,11 @@ def create_users_router() -> APIRouter:
     )
 
     sub_routers = (
-        create_user_router(),
         create_list_users_router(),
         create_change_password_router(),
-        create_grant_streamer_router(),
-        create_revoke_streamer_router(),
         create_activate_user_router(),
         create_deactivate_user_router(),
+        create_apply_as_streamer_router(),
     )
 
     for sub_router in sub_routers:

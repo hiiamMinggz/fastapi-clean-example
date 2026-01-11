@@ -41,7 +41,7 @@ class SqlaWalletDataMapper(WalletCommandGateway):
         for_update: bool = False,
     ) -> Wallet | None:
         """:raises DataMapperError:"""
-        select_stmt: Select[tuple[Wallet]] = select(Wallet).where(Wallet.id_ == user_id)  # type: ignore
+        select_stmt: Select[tuple[Wallet]] = select(Wallet).where(Wallet.owner_id == user_id)  # type: ignore
 
         if for_update:
             select_stmt = select_stmt.with_for_update()

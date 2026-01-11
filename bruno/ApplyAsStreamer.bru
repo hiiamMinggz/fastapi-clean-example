@@ -1,0 +1,23 @@
+meta {
+  name: ApplyAsStreamer
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{host}}/api/v1/users/apply-as-streamer
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "user_id": "019bac42-1974-7c0b-b105-f53f6d5a254d",
+    "min_amount_challenge": 10000,
+    "disable_challenges": false
+  }
+}
+
+settings {
+  encodeUrl: true
+}

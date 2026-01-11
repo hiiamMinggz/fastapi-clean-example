@@ -11,8 +11,8 @@ from app.application.commands.challenge.toggle_challenge_status import (
     ToggleChallengeStatusRequest,
 )
 from app.application.common.exceptions.authorization import AuthorizationError
+from app.domain.base import DomainError
 from app.domain.challenge.challenge_status import ChallengeStatus
-from app.domain.exceptions.base import DomainError
 from app.infrastructure.auth.exceptions import AuthenticationError
 from app.infrastructure.exceptions.gateway import DataMapperError
 from app.presentation.http.auth.fastapi_openapi_markers import cookie_scheme

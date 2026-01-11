@@ -3,11 +3,11 @@ from sqlalchemy.orm import composite
 
 from app.domain.challenge.challenge import Challenge
 from app.domain.challenge.challenge_status import ChallengeStatus
-from app.domain.enums.fee import Fee
-from app.domain.shared.value_objects.id import ChallengeId, UserId
-from app.domain.value_objects.text import Title, Description
-from app.domain.value_objects.token import ChallengeAmount, StreamerChallengeFixedAmount
-from app.domain.value_objects.time import CreatedAt, ExpiresAt, AcceptedAt
+
+from app.domain.challenge.value_objects import ChallengeAmount, ChallengeId, Description, Title
+from app.domain.shared.value_objects.fee import ChallengeFee
+from app.domain.shared.value_objects.time import AcceptedAt, CreatedAt, ExpiresAt
+from app.domain.user.value_objects import StreamerChallengeFixedAmount, StreamerId, UserId
 from app.infrastructure.persistence_sqla.registry import mapping_registry
 
 challenges_table = Table(
@@ -19,7 +19,7 @@ challenges_table = Table(
     Column("created_by", UUID(as_uuid=True), nullable=False),
     Column("assigned_to", UUID(as_uuid=True), nullable=False),
     Column("amount", Numeric(precision=12, scale=2), nullable=False),
-    Column("fee", Enum(Fee, name="challengefee"), nullable=False),
+    Column("fee", Numeric(precision=12, scale=2), nullable=False),
     Column("streamer_fixed_amount", Numeric(precision=12, scale=2), nullable=False),
     Column(
         "status",
@@ -42,9 +42,9 @@ def map_challenges_table() -> None:
             "title": composite(Title, challenges_table.c.title),
             "description": composite(Description, challenges_table.c.description),
             "created_by": composite(UserId, challenges_table.c.created_by),
-            "assigned_to": composite(UserId, challenges_table.c.assigned_to),
+            "assigned_to": composite(StreamerId, challenges_table.c.assigned_to),
             "amount": composite(ChallengeAmount, challenges_table.c.amount),
-            "fee": challenges_table.c.fee,
+            "fee": composite(ChallengeFee, challenges_table.c.fee),
             "streamer_fixed_amount": composite(StreamerChallengeFixedAmount, challenges_table.c.streamer_fixed_amount),
             "status": challenges_table.c.status,
             "created_at": composite(CreatedAt, challenges_table.c.created_at),

@@ -40,14 +40,24 @@ class Description(ValueObject):
     MIN_LEN: ClassVar[Final[int]] = 1
     MAX_LEN: ClassVar[Final[int]] = 255
 
-    value: str
+    value: str | None
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
+        self._validate_description_type(self.value)
         self._validate_description_length(self.value)
+        
+    def _validate_description_type(self, description_value: str | None) -> None:
+        """:raises DomainFieldError:"""
+        if description_value is not None and not isinstance(description_value, str):
+            raise DomainFieldError(
+                f"Description must be a string.",
+            )
 
     def _validate_description_length(self, description_value: str) -> None:
         """:raises DomainFieldError:"""
+        if description_value is None:
+            return
         if len(description_value) < self.MIN_LEN or len(description_value) > self.MAX_LEN:
             raise DomainFieldError(
                 f"Description must be between "

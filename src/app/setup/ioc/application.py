@@ -1,5 +1,8 @@
 from app.application.commands.challenge.toggle_challenge_status import ToggleChallengeStatusInteractor
+from app.application.commands.user.apply_as_streamer import ApplyAsStreamerInteractor
+from app.application.common.ports.transaction_command_gateway import TransactionCommandGateway
 from app.application.common.ports.wallet_command_gateway import WalletCommandGateway
+from app.infrastructure.adapters.transaction_data_mapper_sqla import SqlaTransactionDataMapper
 from app.infrastructure.adapters.wallet_data_mapper_sqla import SqlaWalletDataMapper
 from dishka import Provider, Scope, provide, provide_all
 
@@ -7,15 +10,12 @@ from app.application.commands.user.activate_user import ActivateUserInteractor
 from app.application.commands.user.change_password import ChangePasswordInteractor
 from app.application.commands.challenge.create_challenge import CreateChallengeInteractor
 from app.application.commands.challenge.update_challenge import UpdateChallengeInteractor
-from app.application.commands.user.create_user import CreateUserInteractor
 from app.application.commands.user.deactivate_user import DeactivateUserInteractor
-from app.application.commands.user.verify_streamer import GrantStreamerInteractor
-from app.application.commands.user.revoke_streamer import RevokeStreamerInteractor
 from app.application.common.ports.access_revoker import AccessRevoker
 from app.application.common.ports.challenge_command_gateway import ChallengeCommandGateway
 from app.application.common.ports.flusher import Flusher
 from app.application.common.ports.identity_provider import IdentityProvider
-from app.application.common.ports.streamer_profile_command_gateway import StreamerProfileCommandGateway
+from app.application.common.ports.streamer_command_gateway import StreamerCommandGateway
 from app.application.common.ports.transaction_manager import (
     TransactionManager,
 )
@@ -31,8 +31,8 @@ from app.infrastructure.adapters.main_transaction_manager_sqla import (
 from app.infrastructure.adapters.user_data_mapper_sqla import (
     SqlaUserDataMapper,
 )
-from app.infrastructure.adapters.streamer_profile_data_mapper_sqla import (
-    SqlaStreamerProfileDataMapper,
+from app.infrastructure.adapters.streamer_data_mapper_sqla import (
+    SqlaStreamerDataMapper,
 )
 from app.infrastructure.adapters.user_reader_sqla import SqlaUserReader
 from app.infrastructure.auth.adapters.access_revoker import (
@@ -74,9 +74,9 @@ class ApplicationProvider(Provider):
         source=SqlaUserDataMapper,
         provides=UserCommandGateway,
     )
-    streamer_profile_command_gateway = provide(
-        source=SqlaStreamerProfileDataMapper,
-        provides=StreamerProfileCommandGateway,
+    streamer_command_gateway = provide(
+        source=SqlaStreamerDataMapper,
+        provides=StreamerCommandGateway,
     )
     user_query_gateway = provide(
         source=SqlaUserReader,
@@ -92,17 +92,20 @@ class ApplicationProvider(Provider):
         source=SqlaWalletDataMapper,
         provides=WalletCommandGateway,
     )
+    
+    transaction_command_gateway = provide(
+        source=SqlaTransactionDataMapper,
+        provides=TransactionCommandGateway,
+    )
     # Commands
     commands = provide_all(
         ActivateUserInteractor,
         ChangePasswordInteractor,
-        CreateUserInteractor,
         DeactivateUserInteractor,
-        GrantStreamerInteractor,
-        RevokeStreamerInteractor,
         CreateChallengeInteractor,
         UpdateChallengeInteractor,
         ToggleChallengeStatusInteractor,
+        ApplyAsStreamerInteractor,
     )
 
     # Queries

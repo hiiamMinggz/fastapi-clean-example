@@ -21,7 +21,7 @@ from app.domain.user.user import User
 from app.domain.user.user_role import UserRole
 from app.domain.user.exceptions import UserNotFoundByUsernameError
 from app.domain.user.service import UserService
-from app.domain.user.value_objects import UserId, Username
+from app.domain.user.value_objects import UserId
 
 log = logging.getLogger(__name__)
 

@@ -18,8 +18,7 @@ from app.infrastructure.auth.adapters.transaction_manager_sqla import (
 )
 from app.infrastructure.auth.handlers.log_in import LogInHandler
 from app.infrastructure.auth.handlers.log_out import LogOutHandler
-from app.infrastructure.auth.handlers.streamer_sign_up import StreamerSignUpHandler
-from app.infrastructure.auth.handlers.viewer_sign_up import ViewerSignUpHandler
+from app.infrastructure.auth.handlers.user_sign_up import UserSignUpHandler
 from app.infrastructure.auth.session.id_generator_str import (
     StrAuthSessionIdGenerator,
 )
@@ -65,8 +64,7 @@ class InfrastructureProvider(Provider):
 
     # Infrastructure Handlers
     infra_handlers = provide_all(
-        ViewerSignUpHandler,
-        StreamerSignUpHandler,
+        UserSignUpHandler,
         LogInHandler,
         LogOutHandler,
     )

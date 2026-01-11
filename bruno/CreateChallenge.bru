@@ -1,0 +1,25 @@
+meta {
+  name: CreateChallenge
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{host}}/api/v1/challenges/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "title": "Minggz dai de",
+    "description": "depzai vcl",
+    "assigned_to": "019bac43-34a9-7cb8-9376-e340a674d90c",
+    "amount": 20000,
+    "expires_at": "2026-02-11T07:35:54.978Z"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

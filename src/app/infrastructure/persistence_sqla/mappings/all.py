@@ -24,17 +24,25 @@ during database migrations.
 from app.infrastructure.persistence_sqla.mappings.auth_session import (
     map_auth_sessions_table,
 )
-from app.infrastructure.persistence_sqla.mappings.system_wallet import map_system_wallets_table
+from app.infrastructure.persistence_sqla.mappings.streamer import (
+    map_streamers_table,
+)
+from app.infrastructure.persistence_sqla.mappings.transaction import (
+    map_transactions_table,
+)
+from app.infrastructure.persistence_sqla.mappings.ledger_entry import (
+    map_ledger_entries_table,
+)
 from app.infrastructure.persistence_sqla.mappings.user import map_users_table
 from app.infrastructure.persistence_sqla.mappings.challenge import map_challenges_table
-from app.infrastructure.persistence_sqla.mappings.streamer_profile import map_streamer_profiles_table
 from app.infrastructure.persistence_sqla.mappings.wallet import map_wallets_table
 
 
 def map_tables() -> None:
     map_users_table()
+    map_streamers_table()
+    map_ledger_entries_table()
+    map_transactions_table()
     map_auth_sessions_table()
     map_challenges_table()
-    map_streamer_profiles_table()
     map_wallets_table()
-    map_system_wallets_table()

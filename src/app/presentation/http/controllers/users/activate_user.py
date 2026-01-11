@@ -11,11 +11,9 @@ from app.application.commands.user.activate_user import (
     ActivateUserRequest,
 )
 from app.application.common.exceptions.authorization import AuthorizationError
-from app.domain.exceptions.base import DomainFieldError
-from app.domain.exceptions.user import (
-    ActivationChangeNotPermittedError,
-    UserNotFoundByUsernameError,
-)
+
+from app.domain.base import DomainFieldError
+from app.domain.user.exceptions import ActivationChangeNotPermittedError, UserNotFoundByUsernameError
 from app.infrastructure.auth.exceptions import AuthenticationError
 from app.infrastructure.exceptions.gateway import DataMapperError
 from app.presentation.http.auth.fastapi_openapi_markers import cookie_scheme

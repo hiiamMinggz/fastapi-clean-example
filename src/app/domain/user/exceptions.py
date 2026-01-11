@@ -32,8 +32,11 @@ class ActivationChangeNotPermittedError(DomainError):
 
 
 class RoleAssignmentNotPermittedError(DomainError):
-    def __init__(self, role: UserRole):
-        message = f"Assignment of role {role} is not permitted."
+    def __init__(self, username: Username, role: UserRole):
+        message = (
+            f"Assignment of role {role} to user {username.value!r} is not "
+            "permitted."
+        )
         super().__init__(message)
 
 

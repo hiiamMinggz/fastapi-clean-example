@@ -47,7 +47,6 @@ def create_challenge_router() -> APIRouter:
         request_data = CreateChallengeRequest(
             title=request_data.title,
             description=request_data.description,
-            created_by=request_data.created_by,
             assigned_to=request_data.assigned_to,
             amount=request_data.amount,
             expires_at=request_data.expires_at,

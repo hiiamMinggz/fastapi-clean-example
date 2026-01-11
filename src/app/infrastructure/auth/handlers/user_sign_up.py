@@ -8,13 +8,11 @@ from app.application.common.ports.transaction_manager import TransactionManager
 from app.application.common.ports.user_command_gateway import UserCommandGateway
 from app.application.common.ports.wallet_command_gateway import WalletCommandGateway
 from app.application.common.services.current_user import CurrentUserService
-from app.domain.user.user_role import UserRole
-from app.domain.exceptions.user import UsernameAlreadyExistsError
-from app.domain.services.user import UserService
-from app.domain.services.wallet import WalletService
-from app.domain.value_objects.raw_password import RawPassword
-from app.domain.value_objects.text import Email
-from app.domain.user.value_objects import Username
+from app.domain.user.service import UserService
+from app.domain.user.exceptions import UsernameAlreadyExistsError
+
+from app.domain.user.value_objects import Email, RawPassword, Username
+from app.domain.wallet.service import WalletService
 from app.infrastructure.auth.exceptions import (
     AlreadyAuthenticatedError,
     AuthenticationError,
@@ -27,17 +25,17 @@ log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
-class ViewerSignUpRequest:
+class UserSignUpRequest:
     username: str
     password: str
     email: str
 
 
-class ViewerSignUpResponse(TypedDict):
+class UserSignUpResponse(TypedDict):
     id: UUID
 
 
-class ViewerSignUpHandler:
+class UserSignUpHandler:
     """
     - Open to everyone.
     - Registers a new user with validation and uniqueness checks.
@@ -63,7 +61,7 @@ class ViewerSignUpHandler:
         self._flusher = flusher
         self._transaction_manager = transaction_manager
 
-    async def execute(self, request_data: ViewerSignUpRequest) -> ViewerSignUpResponse:
+    async def execute(self, request_data: UserSignUpRequest) -> UserSignUpResponse:
         """
         :raises AlreadyAuthenticatedError:
         :raises AuthorizationError:
@@ -84,16 +82,16 @@ class ViewerSignUpHandler:
         password = RawPassword(request_data.password)
         email = Email(request_data.email)
         
-        viewer = self._user_service.create_viewer(
+        user = self._user_service.create_user(
             username=username,
             raw_password=password,
             email=email,
         )
         viewer_wallet = self._wallet_service.create_wallet(
-            user_id=viewer.id_,
+            owner_id=user.id_,
         )
 
-        self._user_command_gateway.add(viewer)
+        self._user_command_gateway.add(user)
         self._wallet_command_gateway.add(viewer_wallet)
 
         try:
@@ -103,5 +101,5 @@ class ViewerSignUpHandler:
 
         await self._transaction_manager.commit()
 
-        log.info("Viewer sign up: done. Username: '%s'.", viewer.username.value)
-        return ViewerSignUpResponse(id=viewer.id_.value)
+        log.info("User sign up: done. Username: '%s'.", user.username.value)
+        return UserSignUpResponse(id=user.id_.value)

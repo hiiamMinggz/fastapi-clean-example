@@ -5,7 +5,7 @@ from typing import Any, cast
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.application.common.ports.flusher import Flusher
-from app.domain.exceptions.user import UsernameAlreadyExistsError
+from app.domain.user.exceptions import UsernameAlreadyExistsError
 from app.infrastructure.adapters.constants import (
     DB_CONSTRAINT_VIOLATION,
     DB_FLUSH_DONE,

@@ -3,11 +3,11 @@ from dataclasses import dataclass
 
 from app.application.common.ports.user_command_gateway import UserCommandGateway
 from app.application.common.services.current_user import CurrentUserService
+from app.domain.user.exceptions import UserNotFoundByUsernameError
+from app.domain.user.service import UserService
 from app.domain.user.user import User
-from app.domain.exceptions.user import UserNotFoundByUsernameError
-from app.domain.services.user import UserService
-from app.domain.value_objects.raw_password import RawPassword
-from app.domain.user.value_objects import Username
+
+from app.domain.user.value_objects import RawPassword, Username
 from app.infrastructure.auth.exceptions import (
     AlreadyAuthenticatedError,
     AuthenticationError,
@@ -81,7 +81,7 @@ class LogInHandler:
         if not self._user_service.is_password_valid(user, password):
             raise AuthenticationError(AUTH_INVALID_PASSWORD)
 
-        if user.locked:
+        if not user.is_active:
             raise AuthenticationError(AUTH_ACCOUNT_INACTIVE)
 
         await self._auth_session_service.issue_session(user.id_)
@@ -90,5 +90,5 @@ class LogInHandler:
             "Log in: done. User, ID: '%s', username '%s', role '%s'.",
             user.id_.value,
             user.username.value,
-            user.user_type.value,
+            user.role.value,
         )

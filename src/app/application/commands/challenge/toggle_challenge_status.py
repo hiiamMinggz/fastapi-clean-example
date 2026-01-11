@@ -1,5 +1,6 @@
 import logging
 from dataclasses import dataclass
+from typing import TypedDict
 
 from app.application.common.ports.flusher import Flusher
 from app.application.common.ports.transaction_command_gateway import TransactionCommandGateway
@@ -24,13 +25,11 @@ from app.domain.challenge.service import ChallengeService
 from uuid import UUID
 from datetime import datetime, timezone
 
-from app.domain.shared.entities.ledger.account_type import AccountType
 from app.domain.shared.entities.ledger.service import LedgerService
 from app.domain.shared.entities.transaction.service import TransactionService
 from app.domain.shared.entities.transaction.transaction_type import TransactionType
-from app.domain.shared.value_objects.time import AcceptedAt, CreatedAt, UpdatedAt
-from app.domain.shared.value_objects.token import Token
 from app.domain.wallet.service import WalletService
+from app.domain.wallet.wallet import Wallet
 log = logging.getLogger(__name__)
 
 
@@ -38,6 +37,10 @@ log = logging.getLogger(__name__)
 class ToggleChallengeStatusRequest:
     challenge_id: UUID
     status: ChallengeStatus
+
+
+class ToggleChallengeStatusResponse(TypedDict):
+    message: str
 
 
 class ToggleChallengeStatusInteractor:
@@ -118,12 +121,10 @@ class ToggleChallengeStatusInteractor:
             # init double entry ledger
             escrow_debit_entry = self._ledger_service.create_escrow_debit_entry(
                 debit=challenge.amount,
-                created_at=CreatedAt(now),
             )
             user_wallet_credit_entry = self._ledger_service.create_user_wallet_credit_entry(
                 account_id=viewer_wallet.id_,
                 credit=challenge.amount,
-                created_at=CreatedAt(now),
             )
             
             transaction = self._transaction_service.create_transaction(
@@ -143,10 +144,12 @@ class ToggleChallengeStatusInteractor:
             current_duration = now - challenge.created_at.value
             if current_duration <= challenge.duration * 0.3:
                 # refund full amount to viewer
-                viewer_wallet = await self._wallet_command_gateway.read_by_user_id(
-                    challenge.assigned_to,
+                viewer_wallet: Wallet | None = await self._wallet_command_gateway.read_by_user_id(
+                    challenge.created_by,
                     for_update=True,
                 )
+                if viewer_wallet is None:
+                    raise Exception("Viewer wallet not found")
                 self._wallet_service.credit(
                     wallet=viewer_wallet,
                     amount=challenge.amount
@@ -154,12 +157,10 @@ class ToggleChallengeStatusInteractor:
                 # init double entry ledger
                 escrow_debit_entry = self._ledger_service.create_escrow_debit_entry(
                     debit=challenge.amount,
-                    created_at=CreatedAt(now),
                 )
                 user_wallet_credit_entry = self._ledger_service.create_user_wallet_credit_entry(
                     account_id=viewer_wallet.id_,
                     credit=challenge.amount,
-                    created_at=CreatedAt(now),
                 )
                 
                 transaction = self._transaction_service.create_transaction(
@@ -186,18 +187,15 @@ class ToggleChallengeStatusInteractor:
                 #debit ESCROW
                 escrow_debit_entry = self._ledger_service.create_escrow_debit_entry(
                     debit=challenge.amount,
-                    created_at=CreatedAt(now),
                 )
                 # credit earner
                 commission_credit_entry = self._ledger_service.create_commission_credit_entry(
                     credit=dareus_earn,
-                    created_at=CreatedAt(now),
                 )
                 #credit user_wallet
                 user_wallet_credit_entry = self._ledger_service.create_user_wallet_credit_entry(
                     account_id=viewer_wallet.id_,
                     credit=viewer_get_back,
-                    created_at=CreatedAt(now),
                 )
                 #write transaction
                 transaction = self._transaction_service.create_transaction(
@@ -233,23 +231,19 @@ class ToggleChallengeStatusInteractor:
                 #debit ESCROW
                 escrow_debit_entry = self._ledger_service.create_escrow_debit_entry(
                     debit=challenge.amount,
-                    created_at=CreatedAt(now),
                 )
                 # credit earner
                 commission_credit_entry = self._ledger_service.create_commission_credit_entry(
                     credit=dareus_earn,
-                    created_at=CreatedAt(now),
                 )
                 #credit user_wallet
                 viewer_wallet_credit_entry = self._ledger_service.create_user_wallet_credit_entry(
                     account_id=viewer_wallet.id_,
                     credit=viewer_get_back,
-                    created_at=CreatedAt(now),
                 )
                 streamer_wallet_credit_entry = self._ledger_service.create_user_wallet_credit_entry(
                     account_id=streamer_wallet.id_,
                     credit=streamer_earn,
-                    created_at=CreatedAt(now),
                 )
                 #write transaction
                 transaction = self._transaction_service.create_transaction(
@@ -285,16 +279,13 @@ class ToggleChallengeStatusInteractor:
             
             escrow_debit_entry = self._ledger_service.create_escrow_debit_entry(
                 debit=challenge.amount,
-                created_at=CreatedAt(now),
             )
             commission_credit_entry = self._ledger_service.create_commission_credit_entry(
                 credit=dareus_earn,
-                created_at=CreatedAt(now),
             )
             streamer_wallet_credit_entry = self._ledger_service.create_user_wallet_credit_entry(
                 account_id=streamer_wallet.id_,
                 credit=streamer_earn,
-                created_at=CreatedAt(now),
             )
 
             transaction = self._transaction_service.create_transaction(
@@ -313,3 +304,4 @@ class ToggleChallengeStatusInteractor:
             "Toggle challenge status: done. Challenge ID: %s",
             challenge_id,
         )
+        return ToggleChallengeStatusResponse(message=f"Challenge {challenge_id} status {challenge.status} changed to {new_status}")

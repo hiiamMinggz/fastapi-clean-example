@@ -117,6 +117,10 @@ class ChallengeService:
             raise DomainError(
                 "Challenge can only be ACCEPTED for PENDING challenges"
             )
+        if challenge.status == ChallengeStatus.STREAMER_ACCEPTED:
+            raise DomainError(
+                "Challenge has already been ACCEPTED by the Streamer"
+            )
         now = datetime.now(timezone.utc)
         accepted_at = AcceptedAt(now)
         
@@ -127,6 +131,10 @@ class ChallengeService:
         if challenge.status != ChallengeStatus.PENDING:
             raise DomainError(
                 "Challenge can only be REJECTED by the Streamer for PENDING challenges"
+            )
+        if challenge.status == ChallengeStatus.STREAMER_REJECTED:
+            raise DomainError(
+                "Challenge has already been REJECTED by the Streamer"
             )
         now = datetime.now(timezone.utc)
         updated_at = UpdatedAt(now)
@@ -139,6 +147,10 @@ class ChallengeService:
             raise DomainError(
                 "Challenge can only be REJECTED by the Viewer for PENDING or ACCEPTED challenges"
             )
+        if challenge.status == ChallengeStatus.VIEWER_REJECTED:
+            raise DomainError(
+                "Challenge has already been REJECTED by the Viewer"
+            )
         now = datetime.now(timezone.utc)
         updated_at = UpdatedAt(now)
             
@@ -149,6 +161,10 @@ class ChallengeService:
         if challenge.status != ChallengeStatus.STREAMER_ACCEPTED:
             raise DomainError(
                 "Challenge can only be marked as COMPLETED by the Streamer for ACCEPTED challenges"
+            )
+        if challenge.status == ChallengeStatus.STREAMER_COMPLETED:
+            raise DomainError(
+                "Challenge has already been COMPLETED by the Streamer"
             )
         now = datetime.now(timezone.utc)
         
@@ -166,6 +182,10 @@ class ChallengeService:
         if challenge.status not in {ChallengeStatus.STREAMER_COMPLETED, ChallengeStatus.STREAMER_ACCEPTED}:
             raise DomainError(
                 "Challenge can only be marked as COMPLETED by the Streamer for ACCEPTED or STREAMER_COMPLETED challenges"
+            )
+        if challenge.status == ChallengeStatus.VIEWER_CONFIRMED:
+            raise DomainError(
+                "Challenge has already been CONFIRMED by the Viewer"
             )
         now = datetime.now(timezone.utc)
         updated_at = UpdatedAt(now)

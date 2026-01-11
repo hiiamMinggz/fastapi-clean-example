@@ -1,0 +1,23 @@
+meta {
+  name: SignUp
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{host}}/api/v1/account/viewer/signup
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "username": "streamer_002",
+    "password": "hello_dareus",
+    "email": "miggz2211@gmail.com"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

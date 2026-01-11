@@ -31,6 +31,7 @@ class CurrentUserService:
         :raises AuthorizationError:
         """
         current_user_id = await self._identity_provider.get_current_user_id()
+        log.info("Current user ID: %s.", current_user_id)
         user: User | None = await self._user_command_gateway.read_by_id(current_user_id)
         if user is None or user.is_active is False:
             log.warning("%s ID: %s.", AUTHZ_NO_CURRENT_USER, current_user_id)
