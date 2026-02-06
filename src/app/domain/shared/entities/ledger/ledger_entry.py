@@ -1,9 +1,8 @@
 from app.domain.base import Entity
-from app.domain.shared.entities.transaction.value_objects import TransactionId
-from app.domain.shared.value_objects.time import CreatedAt
+
+from app.domain.shared.value_objects.id import UserId, EntryId
 from app.domain.shared.value_objects.token import Token
 from app.domain.shared.entities.ledger.account_type import AccountType
-from app.domain.shared.entities.ledger.value_objects import AccountId, EntryId
 
 class LedgerEntry(Entity[EntryId]):
     def __init__(
@@ -11,7 +10,7 @@ class LedgerEntry(Entity[EntryId]):
         *, 
         id_: EntryId,
         account_type: AccountType,
-        account_id: AccountId | None,
+        account_id: UserId | None,
         debit: Token,
         credit: Token,
         ):

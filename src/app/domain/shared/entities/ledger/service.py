@@ -1,10 +1,7 @@
-from datetime import datetime, timezone
 from app.domain.shared.entities.ledger.account_type import AccountType
 from app.domain.shared.entities.ledger.ledger_entry import LedgerEntry
-from app.domain.shared.entities.ledger.value_objects import AccountId, EntryId
-from app.domain.shared.entities.transaction.value_objects import TransactionId
 from app.domain.shared.ports.id_generator import IdGenerator
-from app.domain.shared.value_objects.time import CreatedAt
+from app.domain.shared.value_objects.id import UserId, EntryId
 from app.domain.shared.value_objects.token import Token
 
 
@@ -16,7 +13,7 @@ class LedgerService:
         self,
         *,
         account_type: AccountType,
-        account_id: AccountId | None,
+        account_id: UserId | None,
         debit: Token,
         credit: Token,
     ) -> LedgerEntry:
@@ -86,7 +83,7 @@ class LedgerService:
     def create_user_wallet_debit_entry(
         self,
         *,
-        account_id: AccountId,
+        account_id: UserId,
         debit: Token,
     ) -> LedgerEntry:
         """creates a new Ledger instance"""
@@ -104,7 +101,7 @@ class LedgerService:
     def create_user_wallet_credit_entry(
         self,
         *,
-        account_id: AccountId,
+        account_id: UserId,
         credit: Token,
     ) -> LedgerEntry:
         """creates a new Ledger instance"""

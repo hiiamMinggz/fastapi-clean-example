@@ -113,7 +113,7 @@ class ApplyAsStreamerInteractor:
         await self._transaction_manager.commit()
 
         log.info(
-            "Apply as streamer: done. UserId: '%s', StreamerId: '%s'.",
+            "Apply as streamer: done. UserId: '%s', UserId: '%s'.",
             user.id_.value,
             streamer.id_.value,
         )

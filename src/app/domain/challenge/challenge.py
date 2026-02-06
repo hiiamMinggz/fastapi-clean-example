@@ -1,22 +1,23 @@
 from datetime import timedelta
 from app.domain.base import Entity, DomainError
+from app.domain.shared.value_objects.id import ProductId
 from app.domain.shared.value_objects.time import CreatedAt, ExpiresAt, AcceptedAt
-from app.domain.user.value_objects import UserId, StreamerChallengeFixedAmount
+from app.domain.shared.value_objects.id import UserId
 from app.domain.challenge.value_objects import (
-    ChallengeId,
     Title,
     Description,
     ChallengeAmount,
 )
 from app.domain.shared.value_objects.fee import ChallengeFee
 from app.domain.challenge.challenge_status import ChallengeStatus
+from app.domain.user.value_objects import StreamerChallengeFixedAmount
 
 
-class Challenge(Entity[ChallengeId]):
+class Challenge(Entity[ProductId]):
     def __init__(
         self,
         *,
-        id_: ChallengeId,
+        id_: ProductId,
         title: Title,
         description: Description,
         created_by: UserId,

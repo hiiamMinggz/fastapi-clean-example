@@ -95,3 +95,13 @@ class VerifiedAt(Time):
         if self.value is None:
             return
         super(VerifiedAt, self).__post_init__()
+
+@dataclass(frozen=True, slots=True, repr=False)
+class DeliveredAt(Time):
+    """raises DomainFieldError"""
+
+    value: datetime
+
+    def __post_init__(self) -> None:
+        """:raises DomainFieldError:"""
+        super(DeliveredAt, self).__post_init__()

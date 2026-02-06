@@ -26,7 +26,7 @@ from app.domain.challenge.challenge import Challenge
 from app.domain.challenge.exceptions import ChallengeNotFoundByIdError
 from app.domain.challenge.service import ChallengeService
 from app.domain.challenge.value_objects import (
-    ChallengeId,
+    ProductId,
     Title,
     Description,
     ChallengeAmount,
@@ -73,7 +73,7 @@ class UpdateChallengeInteractor:
         )
         current_user = await self._current_user_service.get_current_user()
 
-        challenge_id = ChallengeId(request_data.challenge_id)
+        challenge_id = ProductId(request_data.challenge_id)
         challenge: Challenge | None = await self._challenge_command_gateway.read_by_id(challenge_id)
         if challenge is None:
             raise ChallengeNotFoundByIdError()

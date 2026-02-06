@@ -1,15 +1,12 @@
 from datetime import datetime, timezone
 from app.domain.challenge.challenge import Challenge
 from app.domain.challenge.value_objects import (
-    ChallengeId,
     Title,
     Description,
     ChallengeAmount,    
 )
-from app.domain.user.value_objects import (
-    UserId,
-    StreamerChallengeFixedAmount,
-)
+from app.domain.user.value_objects import StreamerChallengeFixedAmount
+from app.domain.shared.value_objects.id import ProductId, UserId
 from app.domain.challenge.challenge_status import ChallengeStatus
 from app.domain.shared.ports.id_generator import IdGenerator
 from app.domain.shared.value_objects.time import CreatedAt, ExpiresAt, AcceptedAt, UpdatedAt
@@ -33,7 +30,7 @@ class ChallengeService:
             expires_at: ExpiresAt,
          ) -> Challenge:
         
-        challenge_id = ChallengeId(self.challenge_id_generator())
+        challenge_id = ProductId(self.challenge_id_generator())
         now = datetime.now(timezone.utc)
 
         challenge = Challenge(

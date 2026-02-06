@@ -3,7 +3,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.application.common.ports.challenge_command_gateway import ChallengeCommandGateway
 from app.domain.challenge.challenge import Challenge
-from app.domain.challenge.value_objects import ChallengeId
+from app.domain.shared.value_objects.id import ProductId
 from app.infrastructure.adapters.constants import DB_QUERY_FAILED
 from app.infrastructure.adapters.types import MainAsyncSession
 from app.infrastructure.exceptions.gateway import DataMapperError
@@ -20,7 +20,7 @@ class SqlaChallengeDataMapper(ChallengeCommandGateway):
         except SQLAlchemyError as error:
             raise DataMapperError(DB_QUERY_FAILED) from error
 
-    async def read_by_id(self, challenge_id: ChallengeId) -> Challenge | None:
+    async def read_by_id(self, challenge_id: ProductId) -> Challenge | None:
         """:raises DataMapperError:"""
         select_stmt: Select[tuple[Challenge]] = select(Challenge).where(
             Challenge.id_ == challenge_id  # type: ignore

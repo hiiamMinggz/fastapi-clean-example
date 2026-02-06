@@ -2,24 +2,8 @@ from decimal import Decimal
 import re
 from typing import ClassVar, Final
 from dataclasses import dataclass
-from uuid import UUID
-
 from app.domain.base import DomainFieldError, ValueObject
 from app.domain.shared.value_objects.token import Token
-
-@dataclass(frozen=True, slots=True, repr=False)
-class UserId(ValueObject):
-    value: UUID
-
-
-@dataclass(frozen=True, slots=True, repr=False)
-class StreamerId(ValueObject):
-    value: UUID
-
-
-@dataclass(frozen=True, slots=True, repr=False)
-class VerifiedBy(ValueObject):
-    value: UUID | None
 
 
 @dataclass(frozen=True, slots=True, repr=False)

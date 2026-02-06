@@ -1,5 +1,5 @@
 from app.application.common.ports.access_revoker import AccessRevoker
-from app.domain.user.value_objects import UserId
+from app.domain.shared.value_objects.id import UserId
 from app.infrastructure.auth.session.service import AuthSessionService
 
 

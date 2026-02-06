@@ -19,13 +19,15 @@ from app.application.common.services.authorization.permissions import (
 from app.application.common.services.current_user import CurrentUserService
 from app.domain.challenge.challenge import Challenge
 from app.domain.challenge.exceptions import ChallengeNotFoundByIdError
-from app.domain.challenge.value_objects import ChallengeId
+from app.domain.challenge.value_objects import ProductId
 from app.domain.challenge.challenge_status import ChallengeStatus
 from app.domain.challenge.service import ChallengeService
 from uuid import UUID
 from datetime import datetime, timezone
 
 from app.domain.shared.entities.ledger.service import LedgerService
+from app.domain.shared.enums import ProductType
+
 from app.domain.shared.entities.transaction.service import TransactionService
 from app.domain.shared.entities.transaction.transaction_type import TransactionType
 from app.domain.wallet.service import WalletService
@@ -83,7 +85,7 @@ class ToggleChallengeStatusInteractor:
 
         current_user = await self._current_user_service.get_current_user()
         
-        challenge_id = ChallengeId(request_data.challenge_id)
+        challenge_id = ProductId(request_data.challenge_id)
         new_status = request_data.status
         
         challenge: Challenge | None = await self._challenge_command_gateway.read_by_id(challenge_id)
@@ -129,10 +131,12 @@ class ToggleChallengeStatusInteractor:
             
             transaction = self._transaction_service.create_transaction(
                 transaction_type=TransactionType.ESCROW_RELEASE,
+                payer=None,
+                payee=current_user.id_,
                 amount=challenge.amount,
                 reference_id=challenge.id_,
+                reference_type=ProductType.CHALLENGE,
                 ledger_entries=[escrow_debit_entry, user_wallet_credit_entry],
-                metadata={"reason": "Challenge Rejected by Streamer"},
             )
             
         elif new_status == ChallengeStatus.VIEWER_REJECTED:
@@ -165,10 +169,12 @@ class ToggleChallengeStatusInteractor:
                 
                 transaction = self._transaction_service.create_transaction(
                     transaction_type=TransactionType.ESCROW_RELEASE,
+                    payer=None,
+                    payee=current_user.id_,
                     amount=challenge.amount,
                     reference_id=challenge.id_,
+                    reference_type=ProductType.CHALLENGE,
                     ledger_entries=[escrow_debit_entry, user_wallet_credit_entry],
-                    metadata={"reason": "Challenge Rejected by Streamer"},
                 )
                 
             elif current_duration >= challenge.duration:
@@ -200,8 +206,11 @@ class ToggleChallengeStatusInteractor:
                 #write transaction
                 transaction = self._transaction_service.create_transaction(
                     transaction_type=TransactionType.ESCROW_RELEASE,
+                    payer=None,
+                    payee=current_user.id_,
                     amount=challenge.amount,
                     reference_id=challenge.id_,
+                    reference_type=ProductType.CHALLENGE,
                     ledger_entries=[escrow_debit_entry, commission_credit_entry, user_wallet_credit_entry],
                     metadata={"reason": "Challenge Rejected by Streamer"},
                 )

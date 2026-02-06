@@ -107,7 +107,12 @@ class Entity[T: ValueObject]:
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}(id_={self.id_!r})"
-    
+
+@dataclass(frozen=True, slots=True, repr=False)
+class Event:
+    pass
+
+
 class DomainFieldError(Exception):
     """Invalid construction of domain types (Value Objects)."""
 

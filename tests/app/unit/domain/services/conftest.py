@@ -21,6 +21,10 @@ def challenge_id_generator() -> MagicMock:
 def transaction_id_generator() -> MagicMock:
     return cast(MagicMock, create_autospec(IdGenerator))
 
+@pytest.fixture
+def ledger_entry_id_generator() -> MagicMock:
+    return cast(MagicMock, create_autospec(IdGenerator))
+
 
 @pytest.fixture
 def password_hasher() -> MagicMock:

@@ -4,7 +4,7 @@ from sqlalchemy.orm import composite, relationship
 from app.domain.shared.entities.transaction.transaction import Transaction
 from app.domain.shared.entities.transaction.transaction_type import TransactionType
 from app.domain.shared.entities.transaction.value_objects import (
-    ReferenceId,
+    ProductId,
     TransactionId,
 )
 from app.domain.shared.value_objects.time import CreatedAt
@@ -38,7 +38,7 @@ def map_transactions_table() -> None:
             "id_": composite(TransactionId, transactions_table.c.id),
             "transaction_type": transactions_table.c.transaction_type,
             "amount": composite(Token, transactions_table.c.amount),
-            "reference_id": composite(ReferenceId, transactions_table.c.reference_id),
+            "reference_id": composite(ProductId, transactions_table.c.reference_id),
             "metadata": transactions_table.c.metadata,
             "created_at": composite(CreatedAt, transactions_table.c.created_at),
             "ledger_entries": relationship(

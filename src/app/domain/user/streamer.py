@@ -1,12 +1,13 @@
 from app.domain.base import Entity
+from app.domain.shared.value_objects.id import UserId
 from app.domain.shared.value_objects.time import CreatedAt, UpdatedAt, VerifiedAt
-from app.domain.user.value_objects import StreamerChallengeFixedAmount, StreamerId, UserId, VerifiedBy
+from app.domain.user.value_objects import StreamerChallengeFixedAmount
 
-class Streamer(Entity[StreamerId]):
+class Streamer(Entity[UserId]):
     def __init__(
         self,
         *,
-        id_: StreamerId,
+        id_: UserId,
         user_id: UserId,
         is_verified: bool,
         min_amount_challenge: StreamerChallengeFixedAmount,
@@ -14,7 +15,7 @@ class Streamer(Entity[StreamerId]):
         created_at: CreatedAt,
         updated_at: UpdatedAt,
         verified_at: VerifiedAt,
-        verified_by: VerifiedBy,
+        verified_by: UserId,
     ) -> None:
         super().__init__(id_=id_)
         self.user_id = user_id

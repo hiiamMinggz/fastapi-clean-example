@@ -7,8 +7,8 @@ from app.domain.shared.value_objects.time import CreatedAt, UpdatedAt
 from app.domain.base import DomainError
 
 from app.domain.wallet.wallet import Wallet
-from app.domain.wallet.value_objects import WalletId, Balance
-from app.domain.user.value_objects import UserId
+from app.domain.wallet.value_objects import Balance
+from app.domain.shared.value_objects.id import UserId, WalletId
 
 
 class WalletService:

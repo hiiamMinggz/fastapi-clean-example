@@ -16,7 +16,6 @@ from app.application.common.ports.user_command_gateway import UserCommandGateway
 from app.application.common.ports.wallet_command_gateway import WalletCommandGateway
 from app.application.common.services.current_user import CurrentUserService
 
-from app.domain.shared.entities.ledger.account_type import AccountType
 from app.domain.shared.entities.transaction.transaction_type import TransactionType
 from app.domain.user.streamer import Streamer
 from app.domain.user.user_role import UserRole
@@ -30,7 +29,7 @@ from app.domain.challenge.value_objects import (
     Description,
     ChallengeAmount,
 )
-from app.domain.user.value_objects import UserId
+from app.domain.shared.value_objects.id import UserId
 from app.domain.shared.value_objects.time import CreatedAt, ExpiresAt
 from app.domain.shared.value_objects.token import Token
 
@@ -138,10 +137,12 @@ class CreateChallengeInteractor:
         # write transaction
         transaction = self._transaction_service.create_transaction(
             transaction_type=TransactionType.ESCROW_LOCK,
+            payer=current_user.id_,
+            payee=None,
             amount=challenge_amount,
             reference_id=challenge.id_,
+            reference_type=ProductType.CHALLENGE,
             ledger_entries=[user_wallet_debit_entry, escrow_credit_entry],
-            metadata={"reason": "Challenge Created"},
         )
         self._challenge_command_gateway.add(challenge)
         self._transaction_command_gateway.add(transaction)
