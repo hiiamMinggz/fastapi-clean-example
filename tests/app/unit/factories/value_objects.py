@@ -8,13 +8,12 @@ from app.domain.base import ValueObject
 from app.domain.challenge.value_objects import ChallengeAmount, Description, Title
 from app.domain.shared.enums import ProductType
 from app.domain.user.value_objects import Email, RawPassword, StreamerChallengeFixedAmount
-from app.domain.shared.value_objects.id import ProductId, UserId
+from app.domain.shared.value_objects.id import EntryId, ProductId, TransactionId, UserId
 from app.domain.user.value_objects import UserPasswordHash
 from app.domain.user.value_objects import Username
 from app.domain.shared.value_objects.token import Token
-from app.domain.shared.entities.transaction.value_objects import ProductId, TransactionId
-
-from app.domain.shared.entities.ledger.value_objects import UserId, EntryId
+from app.domain.shared.entities.transaction.value_objects import Allocation
+from app.domain.shared.entities.ledger.account_type import AccountType
 
 @dataclass(frozen=True, slots=True, repr=False)
 class SingleFieldVO(ValueObject):
@@ -84,6 +83,20 @@ def create_account_id(value: UUID | None = None) -> UserId:
 
 def create_entry_id(value: UUID | None = None) -> EntryId:
     return EntryId(value or uuid6.uuid7())
+
+def create_allocation(
+    *,
+    payee_type: AccountType = AccountType.USER_WALLET,
+    payee_id: UserId | None = None,
+    amount: Decimal = Decimal("10.00"),
+) -> Allocation:
+    if payee_type == AccountType.USER_WALLET and payee_id is None:
+        payee_id = create_id()
+    return Allocation(
+        payee_type=payee_type,
+        payee_id=payee_id,
+        amount=Token(amount),
+    )
 
 def create_reference_type() -> ProductType:
     return random.choice(list(ProductType))

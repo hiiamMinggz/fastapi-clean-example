@@ -21,6 +21,10 @@ class NotificationId(ValueObject):
     value: UUID
 
 @dataclass(frozen=True, slots=True, repr=False)
+class ChallengeHistoryId(ValueObject):
+    value: UUID
+
+@dataclass(frozen=True, slots=True, repr=False)
 class EntryId(ValueObject):
     """raises DomainFieldError"""
     value: UUID

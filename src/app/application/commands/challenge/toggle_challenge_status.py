@@ -26,10 +26,12 @@ from uuid import UUID
 from datetime import datetime, timezone
 
 from app.domain.shared.entities.ledger.service import LedgerService
+from app.domain.shared.entities.ledger.account_type import AccountType
 from app.domain.shared.enums import ProductType
 
 from app.domain.shared.entities.transaction.service import TransactionService
 from app.domain.shared.entities.transaction.transaction_type import TransactionType
+from app.domain.shared.entities.transaction.value_objects import Allocation
 from app.domain.wallet.service import WalletService
 from app.domain.wallet.wallet import Wallet
 log = logging.getLogger(__name__)
@@ -92,6 +94,8 @@ class ToggleChallengeStatusInteractor:
         if challenge is None:
             raise ChallengeNotFoundByIdError()
 
+        history_entries: list = []
+
         # Authorize: can only update challenges created by the current user
         authorize(
             CanChangeChallengeStatus(),
@@ -104,12 +108,16 @@ class ToggleChallengeStatusInteractor:
         if new_status == ChallengeStatus.STREAMER_ACCEPTED:
             self._challenge_service.streamer_accept_challenge(
                 challenge=challenge,
+                changed_by=current_user.id_,
+                history_collector=history_entries,
             )
             #TODO: Add notification to viewer
         elif new_status == ChallengeStatus.STREAMER_REJECTED:
             # update challenge status
             self._challenge_service.streamer_reject_challenge(
                 challenge=challenge,
+                changed_by=current_user.id_,
+                history_collector=history_entries,
             )
             # refund full amount to viewer
             viewer_wallet = await self._wallet_command_gateway.read_by_user_id(
@@ -131,8 +139,15 @@ class ToggleChallengeStatusInteractor:
             
             transaction = self._transaction_service.create_transaction(
                 transaction_type=TransactionType.ESCROW_RELEASE,
-                payer=None,
-                payee=current_user.id_,
+                payer_type=AccountType.ESCROW,
+                payer_id=None,
+                allocations=[
+                    Allocation(
+                        payee_type=AccountType.USER_WALLET,
+                        payee_id=current_user.id_,
+                        amount=challenge.amount,
+                    )
+                ],
                 amount=challenge.amount,
                 reference_id=challenge.id_,
                 reference_type=ProductType.CHALLENGE,
@@ -142,6 +157,8 @@ class ToggleChallengeStatusInteractor:
         elif new_status == ChallengeStatus.VIEWER_REJECTED:
             self._challenge_service.viewer_reject_challenge(
                 challenge=challenge,
+                changed_by=current_user.id_,
+                history_collector=history_entries,
             )
             #TODO: Add notification to streamer
             #release escrow based on time policy
@@ -169,8 +186,15 @@ class ToggleChallengeStatusInteractor:
                 
                 transaction = self._transaction_service.create_transaction(
                     transaction_type=TransactionType.ESCROW_RELEASE,
-                    payer=None,
-                    payee=current_user.id_,
+                    payer_type=AccountType.ESCROW,
+                    payer_id=None,
+                    allocations=[
+                        Allocation(
+                            payee_type=AccountType.USER_WALLET,
+                            payee_id=current_user.id_,
+                            amount=challenge.amount,
+                        )
+                    ],
                     amount=challenge.amount,
                     reference_id=challenge.id_,
                     reference_type=ProductType.CHALLENGE,
@@ -206,8 +230,20 @@ class ToggleChallengeStatusInteractor:
                 #write transaction
                 transaction = self._transaction_service.create_transaction(
                     transaction_type=TransactionType.ESCROW_RELEASE,
-                    payer=None,
-                    payee=current_user.id_,
+                    payer_type=AccountType.ESCROW,
+                    payer_id=None,
+                    allocations=[
+                        Allocation(
+                            payee_type=AccountType.COMMISSION,
+                            payee_id=None,
+                            amount=dareus_earn,
+                        ),
+                        Allocation(
+                            payee_type=AccountType.USER_WALLET,
+                            payee_id=current_user.id_,
+                            amount=viewer_get_back,
+                        ),
+                    ],
                     amount=challenge.amount,
                     reference_id=challenge.id_,
                     reference_type=ProductType.CHALLENGE,
@@ -257,8 +293,28 @@ class ToggleChallengeStatusInteractor:
                 #write transaction
                 transaction = self._transaction_service.create_transaction(
                     transaction_type=TransactionType.ESCROW_RELEASE,
+                    payer_type=AccountType.ESCROW,
+                    payer_id=None,
+                    allocations=[
+                        Allocation(
+                            payee_type=AccountType.COMMISSION,
+                            payee_id=None,
+                            amount=dareus_earn,
+                        ),
+                        Allocation(
+                            payee_type=AccountType.USER_WALLET,
+                            payee_id=current_user.id_,
+                            amount=viewer_get_back,
+                        ),
+                        Allocation(
+                            payee_type=AccountType.USER_WALLET,
+                            payee_id=challenge.assigned_to,
+                            amount=streamer_earn,
+                        ),
+                    ],
                     amount=challenge.amount,
                     reference_id=challenge.id_,
+                    reference_type=ProductType.CHALLENGE,
                     ledger_entries=[escrow_debit_entry, commission_credit_entry, viewer_wallet_credit_entry, streamer_wallet_credit_entry],
                     metadata={"reason": "Challenge Rejected by Streamer"},
                 )
@@ -267,12 +323,16 @@ class ToggleChallengeStatusInteractor:
         elif new_status == ChallengeStatus.STREAMER_COMPLETED:
             self._challenge_service.streamer_complete_challenge(
                 challenge=challenge,
+                changed_by=current_user.id_,
+                history_collector=history_entries,
             )
             #TODO: Add notification to viewer to confirm challenge
             
         elif new_status == ChallengeStatus.VIEWER_CONFIRMED:
             self._challenge_service.viewer_confirm_challenge(
                 challenge=challenge,
+                changed_by=current_user.id_,
+                history_collector=history_entries,
             )
             dareus_earn = challenge.amount * 0.1
             streamer_earn = challenge.amount - dareus_earn
@@ -299,8 +359,23 @@ class ToggleChallengeStatusInteractor:
 
             transaction = self._transaction_service.create_transaction(
                 transaction_type=TransactionType.ESCROW_RELEASE,
+                payer_type=AccountType.ESCROW,
+                payer_id=None,
+                allocations=[
+                    Allocation(
+                        payee_type=AccountType.COMMISSION,
+                        payee_id=None,
+                        amount=dareus_earn,
+                    ),
+                    Allocation(
+                        payee_type=AccountType.USER_WALLET,
+                        payee_id=challenge.assigned_to,
+                        amount=streamer_earn,
+                    ),
+                ],
                 amount=challenge.amount,
                 reference_id=challenge.id_,
+                reference_type=ProductType.CHALLENGE,
                 ledger_entries=[escrow_debit_entry, commission_credit_entry, streamer_wallet_credit_entry],
                 metadata={"reason": "Challenge Completed by Viewer"},
             )

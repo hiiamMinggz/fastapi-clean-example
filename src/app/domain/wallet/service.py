@@ -48,7 +48,4 @@ class WalletService:
         wallet.balance -= amount
         wallet.updated_at = UpdatedAt(datetime.now(timezone.utc))
     
-    @property
-    def balance(self, wallet: Wallet) -> Token:
-        """returns the balance of the wallet"""
-        return wallet.balance
+

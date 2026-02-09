@@ -1,7 +1,7 @@
 from app.domain.shared.entities.ledger.account_type import AccountType
 from app.domain.shared.entities.ledger.ledger_entry import LedgerEntry
 from app.domain.shared.ports.id_generator import IdGenerator
-from app.domain.shared.value_objects.id import UserId, EntryId
+from app.domain.shared.value_objects.id import WalletId, EntryId
 from app.domain.shared.value_objects.token import Token
 
 
@@ -13,7 +13,7 @@ class LedgerService:
         self,
         *,
         account_type: AccountType,
-        account_id: UserId | None,
+        account_id: WalletId | None,
         debit: Token,
         credit: Token,
     ) -> LedgerEntry:
@@ -25,6 +25,25 @@ class LedgerService:
             account_type=account_type,
             account_id=account_id,
             debit=debit,
+            credit=credit,
+        )
+        return entry
+    
+    def create_credit_entry(
+        self,
+        *,
+        account_type: AccountType,
+        account_id: WalletId | None,
+        credit: Token,
+    ) -> LedgerEntry:
+        """creates a new Ledger instance"""
+        entry_id = EntryId(self._ledger_entry_id_generator())
+        
+        entry = LedgerEntry(
+            id_=entry_id,
+            account_type=account_type,
+            account_id=account_id,
+            debit=Token(Token.ZERO),
             credit=credit,
         )
         return entry
@@ -83,7 +102,7 @@ class LedgerService:
     def create_user_wallet_debit_entry(
         self,
         *,
-        account_id: UserId,
+        account_id: WalletId,
         debit: Token,
     ) -> LedgerEntry:
         """creates a new Ledger instance"""
@@ -101,7 +120,7 @@ class LedgerService:
     def create_user_wallet_credit_entry(
         self,
         *,
-        account_id: UserId,
+        account_id: WalletId,
         credit: Token,
     ) -> LedgerEntry:
         """creates a new Ledger instance"""

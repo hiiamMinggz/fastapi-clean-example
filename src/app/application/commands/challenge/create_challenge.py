@@ -2,7 +2,7 @@ import logging
 from dataclasses import dataclass
 from typing import TypedDict
 from uuid import UUID
-from datetime import datetime, timezone
+from datetime import datetime
 from decimal import Decimal
 from app.application.common.ports.flusher import Flusher
 from app.application.common.ports.streamer_command_gateway import StreamerCommandGateway
@@ -17,8 +17,10 @@ from app.application.common.ports.wallet_command_gateway import WalletCommandGat
 from app.application.common.services.current_user import CurrentUserService
 
 from app.domain.shared.entities.transaction.transaction_type import TransactionType
+from app.domain.shared.enums import ProductType
+from app.domain.shared.entities.ledger.account_type import AccountType
+from app.domain.shared.entities.transaction.value_objects import Allocation
 from app.domain.user.streamer import Streamer
-from app.domain.user.user_role import UserRole
 from app.domain.base import DomainError
 from app.domain.challenge.service import ChallengeService
 from app.domain.wallet.service import WalletService
@@ -110,6 +112,7 @@ class CreateChallengeInteractor:
             raise DomainError("Assigned to is not a valid streamer")
         
         challenge_amount = ChallengeAmount(request_data.amount)
+        history_entries: list = []
         
         #create challenge
         challenge = self._challenge_service.create_challenge(
@@ -120,6 +123,7 @@ class CreateChallengeInteractor:
             amount=challenge_amount,
             streamer_fixed_amount=streamer.min_amount_challenge,
             expires_at=ExpiresAt(request_data.expires_at),
+            history_collector=history_entries,
         )
         #debit wallet
         self._wallet_service.debit(
@@ -128,7 +132,7 @@ class CreateChallengeInteractor:
         )
         # init double entry ledger
         user_wallet_debit_entry = self._ledger_service.create_user_wallet_debit_entry(
-            account_id=current_user_wallet.id_,
+            account_id=current_user.id_,
             debit=challenge_amount,
         )
         escrow_credit_entry = self._ledger_service.create_escrow_credit_entry(
@@ -137,8 +141,15 @@ class CreateChallengeInteractor:
         # write transaction
         transaction = self._transaction_service.create_transaction(
             transaction_type=TransactionType.ESCROW_LOCK,
-            payer=current_user.id_,
-            payee=None,
+            payer_type=AccountType.USER_WALLET,
+            payer_id=current_user.id_,
+            allocations=[
+                Allocation(
+                    payee_type=AccountType.ESCROW,
+                    payee_id=None,
+                    amount=challenge_amount,
+                )
+            ],
             amount=challenge_amount,
             reference_id=challenge.id_,
             reference_type=ProductType.CHALLENGE,

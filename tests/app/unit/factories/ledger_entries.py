@@ -33,9 +33,13 @@ def create_debit_entry(
     amount: Token | None = None,
 ) -> LedgerEntry:
     amount = amount or create_token(Decimal("10.00"))
+    if account_type == AccountType.USER_WALLET:
+        account_id_value = account_id or create_account_id()
+    else:
+        account_id_value = None
     return create_ledger_entry(
         account_type=account_type,
-        account_id=account_id or create_account_id(),
+        account_id=account_id_value,
         debit=amount,
         credit=Token(Token.ZERO),
     )
@@ -48,9 +52,13 @@ def create_credit_entry(
     amount: Token | None = None,
 ) -> LedgerEntry:
     amount = amount or create_token(Decimal("10.00"))
+    if account_type == AccountType.USER_WALLET:
+        account_id_value = account_id or create_account_id()
+    else:
+        account_id_value = None
     return create_ledger_entry(
         account_type=account_type,
-        account_id=account_id or create_account_id(),
+        account_id=account_id_value,
         debit=Token(Token.ZERO),
         credit=amount,
     )

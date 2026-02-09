@@ -5,8 +5,10 @@ from unittest.mock import MagicMock
 import pytest
 
 from app.domain.base import DomainError
+from app.domain.shared.entities.ledger.account_type import AccountType
 from app.domain.shared.entities.transaction.service import TransactionService
 from app.domain.shared.entities.transaction.transaction_type import TransactionType
+from app.domain.shared.entities.transaction.value_objects import Allocation
 from tests.app.unit.factories.ledger_entries import create_balanced_ledger_entries
 from tests.app.unit.factories.value_objects import (
     create_id,
@@ -49,8 +51,15 @@ def test_create_transaction_sets_fields(
 
     transaction = sut.create_transaction(
         transaction_type=transaction_type,
-        payer=payer,
-        payee=None,
+        payer_type=AccountType.USER_WALLET,
+        payer_id=payer,
+        allocations=[
+            Allocation(
+                payee_type=AccountType.BANK,
+                payee_id=None,
+                amount=amount,
+            )
+        ],
         amount=amount,
         reference_id=reference_id,
         reference_type=reference_type,
@@ -59,8 +68,9 @@ def test_create_transaction_sets_fields(
 
     assert transaction.id_ == expected_id
     assert transaction.transaction_type is transaction_type
-    assert transaction.payer == payer
-    assert transaction.payee is None
+    assert transaction.payer_type == AccountType.USER_WALLET
+    assert transaction.payer_id == payer
+    assert transaction.allocations[0].amount == amount
     assert transaction.amount == amount
     assert transaction.reference_id == reference_id
     assert transaction.reference_type == reference_type
@@ -69,7 +79,7 @@ def test_create_transaction_sets_fields(
     transaction_id_generator.assert_called_once()
 
 
-def test_create_transaction_rejects_missing_payer_and_payee(
+def test_create_transaction_rejects_missing_payer_id_for_user_wallet(
     transaction_id_generator: MagicMock,
 ) -> None:
     sut = TransactionService(transaction_id_generator)
@@ -77,8 +87,15 @@ def test_create_transaction_rejects_missing_payer_and_payee(
     with pytest.raises(DomainError):
         sut.create_transaction(
             transaction_type=TransactionType.DEPOSIT,
-            payer=None,
-            payee=None,
+            payer_type=AccountType.USER_WALLET,
+            payer_id=None,
+            allocations=[
+                Allocation(
+                    payee_type=AccountType.BANK,
+                    payee_id=None,
+                    amount=create_token(Decimal("10.00")),
+                )
+            ],
             amount=create_token(Decimal("10.00")),
             reference_id=create_reference_id(),
             reference_type=create_reference_type(),

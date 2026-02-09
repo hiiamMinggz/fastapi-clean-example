@@ -1,12 +1,12 @@
-from typing import List
 from app.domain.base import DomainError, Entity
+from app.domain.shared.entities.ledger.account_type import AccountType
 from app.domain.shared.entities.ledger.ledger_entry import LedgerEntry
+from app.domain.shared.entities.transaction.value_objects import Allocation
 from app.domain.shared.enums import ProductType
 from app.domain.shared.value_objects.time import CreatedAt
-from app.domain.shared.entities.transaction.value_objects import TransactionId, ProductId
 from app.domain.shared.value_objects.token import Token
 from app.domain.shared.entities.transaction.transaction_type import TransactionType
-from app.domain.shared.value_objects.id import UserId
+from app.domain.shared.value_objects.id import ProductId, TransactionId, WalletId
 
 
 class Transaction(Entity[TransactionId]):
@@ -15,28 +15,31 @@ class Transaction(Entity[TransactionId]):
         *,
         id_: TransactionId,
         transaction_type: TransactionType,
-        payer: UserId | None,
-        payee: UserId | None,
+        payer_type: AccountType,
+        payer_id: WalletId | None,
+        allocations: list[Allocation],
         amount: Token,
         reference_id: ProductId,
         reference_type: ProductType,
-        ledger_entries: List[LedgerEntry],
+        ledger_entries: list[LedgerEntry],
         created_at: CreatedAt,
     ) -> None:
         super().__init__(id_=id_)
         self.transaction_type = transaction_type
-        self.payer = payer
-        self.payee = payee
+        self.payer_type = payer_type
+        self.payer_id = payer_id
+        self.allocations = list(allocations)
         self.amount = amount
         self.reference_id = reference_id
         self.reference_type = reference_type
-        self.ledger_entries = ledger_entries
+        self.ledger_entries = list(ledger_entries)
         self.created_at = created_at
         self.validate()
 
     def validate(self) -> None:
-        self._validate_payer_payee()
+        self._validate_payer()
         self._validate_amount()
+        self._validate_allocations()
         self._validate_ledger_entries()
         self._validate_ledger_balance()
 
@@ -65,12 +68,25 @@ class Transaction(Entity[TransactionId]):
                 f"Transaction amount {self.amount} does not match ledger entries debit {total_debit} and credit {total_credit}.",
             )
     
-    def _validate_payer_payee(self) -> None:
-        if self.payer is None and self.payee is None:
+    def _validate_payer(self) -> None:
+        if self.payer_type == AccountType.USER_WALLET and self.payer_id is None:
             raise DomainError(
-                "Transaction must have either a payer or a payee.",
+                "Payer must include user id for user wallets.",
             )
-        if self.payer is not None and self.payee is not None:
+        if self.payer_type != AccountType.USER_WALLET and self.payer_id is not None:
             raise DomainError(
-                "Transaction must have either a payer or a payee, but not both.",
+                "Payer id must be None for system accounts.",
+            )
+
+    def _validate_allocations(self) -> None:
+        if not self.allocations:
+            raise DomainError(
+                "Transaction must have at least one allocation.",
+            )
+        total_allocations = sum(
+            allocation.amount.value for allocation in self.allocations
+        )
+        if total_allocations != self.amount.value:
+            raise DomainError(
+                f"Transaction amount {self.amount} does not match allocations total {total_allocations}.",
             )
