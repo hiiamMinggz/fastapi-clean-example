@@ -29,7 +29,6 @@ class EntryId(ValueObject):
     """raises DomainFieldError"""
     value: UUID
 
-
 @dataclass(frozen=True, slots=True, repr=False)
 class TransactionId(ValueObject):
     value: UUID

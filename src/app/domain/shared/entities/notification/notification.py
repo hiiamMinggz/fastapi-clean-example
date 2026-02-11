@@ -23,4 +23,3 @@ class Notification(Entity[NotificationId]):
         self.created_at = created_at
         self.delivered_at = delivered_at
         self.is_read = is_read
-  

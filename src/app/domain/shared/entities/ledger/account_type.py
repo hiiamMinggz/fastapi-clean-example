@@ -4,4 +4,5 @@ class AccountType(StrEnum):
     BANK = "bank"
     USER_WALLET = "user_wallet"
     ESCROW = "escrow"
+    POOL = "pool"
     REVENUE = "revenue"
