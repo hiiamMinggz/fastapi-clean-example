@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from app.domain.base import DomainError, Entity
 from app.domain.shared.entities.ledger.account_type import AccountType
 from app.domain.shared.entities.ledger.ledger_entry import LedgerEntry
@@ -17,22 +19,22 @@ class Transaction(Entity[TransactionId]):
         transaction_type: TransactionType,
         payer_type: AccountType,
         payer_id: WalletId | None,
-        allocations: list[Allocation],
+        allocations: Tuple[Allocation, ...],
         amount: Token,
         reference_id: ProductId,
         reference_type: ProductType,
-        ledger_entries: list[LedgerEntry],
+        ledger_entries: Tuple[LedgerEntry, ...],
         created_at: CreatedAt,
     ) -> None:
         super().__init__(id_=id_)
         self.transaction_type = transaction_type
         self.payer_type = payer_type
         self.payer_id = payer_id
-        self.allocations = list(allocations)
+        self.allocations = allocations
         self.amount = amount
         self.reference_id = reference_id
         self.reference_type = reference_type
-        self.ledger_entries = list(ledger_entries)
+        self.ledger_entries = ledger_entries
         self.created_at = created_at
         self.validate()
 
@@ -42,6 +44,7 @@ class Transaction(Entity[TransactionId]):
         self._validate_allocations()
         self._validate_ledger_entries()
         self._validate_ledger_balance()
+        self._validate_allocation_ledger_mapping()
 
     def _validate_amount(self) -> None:
         if self.amount.value <= Token.ZERO:
@@ -71,7 +74,7 @@ class Transaction(Entity[TransactionId]):
     def _validate_payer(self) -> None:
         if self.payer_type == AccountType.USER_WALLET and self.payer_id is None:
             raise DomainError(
-                "Payer must include user id for user wallets.",
+                "Payer must include wallet id for user wallets.",
             )
         if self.payer_type != AccountType.USER_WALLET and self.payer_id is not None:
             raise DomainError(
@@ -89,4 +92,47 @@ class Transaction(Entity[TransactionId]):
         if total_allocations != self.amount.value:
             raise DomainError(
                 f"Transaction amount {self.amount} does not match allocations total {total_allocations}.",
+            )
+
+    def _validate_allocation_ledger_mapping(self) -> None:
+        debits = [
+            entry
+            for entry in self.ledger_entries
+            if entry.debit.value > Token.ZERO
+        ]
+        credits = [
+            entry
+            for entry in self.ledger_entries
+            if entry.credit.value > Token.ZERO
+        ]
+
+        if len(debits) != 1:
+            raise DomainError("Transaction must have exactly one debit entry.")
+
+        debit_entry = debits[0]
+        if (
+            debit_entry.account_type != self.payer_type
+            or debit_entry.account_id != self.payer_id
+        ):
+            raise DomainError(
+                "Payer does not match debit ledger entry.",
+            )
+        if debit_entry.debit.value != self.amount.value:
+            raise DomainError(
+                "Debit entry amount does not match transaction amount.",
+            )
+
+        allocation_map: dict[tuple[AccountType, WalletId | None], Token] = {}
+        for allocation in self.allocations:
+            key = (allocation.payee_type, allocation.payee_id)
+            allocation_map[key] = allocation_map.get(key, Token.ZERO) + allocation.amount.value
+
+        credit_map: dict[tuple[AccountType, WalletId | None], Token] = {}
+        for entry in credits:
+            key = (entry.account_type, entry.account_id)
+            credit_map[key] = credit_map.get(key, Token.ZERO) + entry.credit.value
+
+        if credit_map != allocation_map:
+            raise DomainError(
+                "Allocations do not match credit ledger entries.",
             )

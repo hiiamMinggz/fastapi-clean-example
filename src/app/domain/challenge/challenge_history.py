@@ -26,7 +26,6 @@ class ChallengeHistory(Entity[ChallengeHistoryId]):
         changed_by: UserId | None,
         changed_at: CreatedAt,
         changes: Mapping[str, Mapping[str, object]] | None = None,
-        note: str | None = None,
     ) -> None:
         super().__init__(id_=id_)
         self.challenge_id = challenge_id
@@ -35,7 +34,6 @@ class ChallengeHistory(Entity[ChallengeHistoryId]):
         self.changed_by = changed_by
         self.changed_at = changed_at
         self.changes = changes
-        self.note = note
         self.validate()
 
     def validate(self) -> None:

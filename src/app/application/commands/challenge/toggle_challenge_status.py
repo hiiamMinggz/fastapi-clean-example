@@ -234,7 +234,7 @@ class ToggleChallengeStatusInteractor:
                     payer_id=None,
                     allocations=[
                         Allocation(
-                            payee_type=AccountType.COMMISSION,
+                            payee_type=AccountType.REVENUE,
                             payee_id=None,
                             amount=dareus_earn,
                         ),
@@ -297,7 +297,7 @@ class ToggleChallengeStatusInteractor:
                     payer_id=None,
                     allocations=[
                         Allocation(
-                            payee_type=AccountType.COMMISSION,
+                            payee_type=AccountType.REVENUE,
                             payee_id=None,
                             amount=dareus_earn,
                         ),
@@ -363,7 +363,7 @@ class ToggleChallengeStatusInteractor:
                 payer_id=None,
                 allocations=[
                     Allocation(
-                        payee_type=AccountType.COMMISSION,
+                        payee_type=AccountType.REVENUE,
                         payee_id=None,
                         amount=dareus_earn,
                     ),

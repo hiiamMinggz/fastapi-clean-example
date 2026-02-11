@@ -9,26 +9,6 @@ class LedgerService:
     def __init__(self, ledger_entry_id_generator: IdGenerator):
         self._ledger_entry_id_generator = ledger_entry_id_generator
 
-    def create_ledger_entry(
-        self,
-        *,
-        account_type: AccountType,
-        account_id: WalletId | None,
-        debit: Token,
-        credit: Token,
-    ) -> LedgerEntry:
-        """creates a new Ledger instance"""
-        entry_id = EntryId(self._ledger_entry_id_generator())
-        
-        entry = LedgerEntry(
-            id_=entry_id,
-            account_type=account_type,
-            account_id=account_id,
-            debit=debit,
-            credit=credit,
-        )
-        return entry
-    
     def create_credit_entry(
         self,
         *,
@@ -117,37 +97,3 @@ class LedgerService:
         )
         return entry
     
-    def create_user_wallet_credit_entry(
-        self,
-        *,
-        account_id: WalletId,
-        credit: Token,
-    ) -> LedgerEntry:
-        """creates a new Ledger instance"""
-        entry_id = EntryId(self._ledger_entry_id_generator())
-        
-        entry = LedgerEntry(
-            id_=entry_id,
-            account_type=AccountType.USER_WALLET,
-            account_id=account_id,
-            debit=Token(Token.ZERO),
-            credit=credit,
-        )
-        return entry
-    
-    def create_commission_credit_entry(
-        self,
-        *,
-        credit: Token,
-    ) -> LedgerEntry:
-        """creates a new Ledger instance"""
-        entry_id = EntryId(self._ledger_entry_id_generator())
-        
-        entry = LedgerEntry(
-            id_=entry_id,
-            account_type=AccountType.COMMISSION,
-            account_id=None,
-            debit=Token(Token.ZERO),
-            credit=credit,
-        )
-        return entry

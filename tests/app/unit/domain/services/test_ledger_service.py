@@ -142,7 +142,7 @@ def test_create_commission_credit_entry_sets_defaults(
     entry = sut.create_commission_credit_entry(credit=credit)
 
     assert entry.id_.value == expected_id
-    assert entry.account_type is AccountType.COMMISSION
+    assert entry.account_type is AccountType.REVENUE
     assert entry.account_id is None
     assert entry.debit == Token(Token.ZERO)
     assert entry.credit == credit
