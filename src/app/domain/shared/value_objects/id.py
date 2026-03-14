@@ -10,6 +10,10 @@ class ProductId(ValueObject):
 @dataclass(frozen=True, slots=True, repr=False)
 class UserId(ValueObject):
     value: UUID
+    
+@dataclass(frozen=True, slots=True, repr=False)
+class StreamerId(ValueObject):
+    value: UUID
 
 @dataclass(frozen=True, slots=True, repr=False)
 class WalletId(ValueObject):

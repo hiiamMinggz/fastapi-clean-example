@@ -26,12 +26,12 @@ from app.domain.challenge.challenge import Challenge
 from app.domain.challenge.exceptions import ChallengeNotFoundByIdError
 from app.domain.challenge.service import ChallengeService
 from app.domain.challenge.value_objects import (
-    ProductId,
     Title,
     Description,
     ChallengeAmount,
 )
-from app.domain.shared.value_objects.time import AcceptedAt, ExpiresAt, UpdatedAt
+from app.domain.shared.value_objects.id import ProductId
+from app.domain.shared.value_objects.time import ExpiresAt
 
 log = logging.getLogger(__name__)
 
@@ -77,8 +77,6 @@ class UpdateChallengeInteractor:
         challenge: Challenge | None = await self._challenge_command_gateway.read_by_id(challenge_id)
         if challenge is None:
             raise ChallengeNotFoundByIdError()
-
-        history_entries: list = []
         
         if request_data.title is not None:
             authorize(
@@ -94,7 +92,6 @@ class UpdateChallengeInteractor:
                 title=Title(request_data.title),
                 description=Description(request_data.description),
                 changed_by=current_user.id_,
-                history_collector=history_entries,
             )
         if request_data.amount is not None:
             authorize(
@@ -108,7 +105,6 @@ class UpdateChallengeInteractor:
                 challenge=challenge,
                 amount=ChallengeAmount(request_data.amount),
                 changed_by=current_user.id_,
-                history_collector=history_entries,
             )
         if request_data.expires_at is not None:
             authorize(
@@ -122,7 +118,6 @@ class UpdateChallengeInteractor:
                 challenge=challenge,
                 expires_at=ExpiresAt(request_data.expires_at),
                 changed_by=current_user.id_,
-                history_collector=history_entries,
             )
         
         await self._flusher.flush()

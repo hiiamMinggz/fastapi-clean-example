@@ -3,7 +3,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.application.common.ports.streamer_command_gateway import StreamerCommandGateway
 from app.domain.user.streamer import Streamer
-from app.domain.shared.value_objects.id import UserId
+from app.domain.shared.value_objects.id import StreamerId
 from app.infrastructure.adapters.constants import DB_QUERY_FAILED
 from app.infrastructure.adapters.types import MainAsyncSession
 from app.infrastructure.exceptions.gateway import DataMapperError
@@ -21,7 +21,7 @@ class SqlaStreamerDataMapper(StreamerCommandGateway):
         except SQLAlchemyError as error:
             raise DataMapperError(DB_QUERY_FAILED) from error
 
-    async def read_by_id(self, streamer_id: UserId, for_update: bool = False) -> Streamer | None:
+    async def read_by_id(self, streamer_id: StreamerId, for_update: bool = False) -> Streamer | None:
         """:raises DataMapperError:"""
         select_stmt: Select[tuple[Streamer]] = select(Streamer).where(Streamer.id_ == streamer_id)  # type: ignore
 

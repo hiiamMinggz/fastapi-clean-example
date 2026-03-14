@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Protocol
 
-from app.domain.shared.value_objects.id import UserId
+from app.domain.shared.value_objects.id import StreamerId
 from app.domain.user.streamer import Streamer
 
 class StreamerCommandGateway(Protocol):
@@ -10,6 +10,6 @@ class StreamerCommandGateway(Protocol):
         """:raises DataMapperError:"""
 
     @abstractmethod
-    async def read_by_id(self, streamer_id: UserId, for_update: bool = False) -> Streamer | None:
+    async def read_by_id(self, streamer_id: StreamerId, for_update: bool = False) -> Streamer | None:
         """:raises DataMapperError:"""
 

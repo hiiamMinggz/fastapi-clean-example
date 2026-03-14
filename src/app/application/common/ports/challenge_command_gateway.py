@@ -2,7 +2,7 @@ from abc import abstractmethod
 from typing import Protocol
 
 from app.domain.challenge.challenge import Challenge
-from app.domain.challenge.value_objects import ProductId
+from app.domain.shared.value_objects.id import ProductId
 
 
 class ChallengeCommandGateway(Protocol):

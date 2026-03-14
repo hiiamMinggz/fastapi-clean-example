@@ -92,7 +92,6 @@ class ToggleChallengeStatusInteractor:
         if challenge is None:
             raise ChallengeNotFoundByIdError()
 
-        history_entries: list = []
 
         # Authorize: can only update challenges created by the current user
         authorize(
@@ -119,7 +118,6 @@ class ToggleChallengeStatusInteractor:
             challenge=challenge,
             changed_by=current_user.id_,
             now=now,
-            history_entries=history_entries,
         )
 
         if transaction is not None:
@@ -148,12 +146,10 @@ class ToggleChallengeStatusInteractor:
         challenge: Challenge,
         changed_by,
         now: datetime,
-        history_entries: list,
     ) -> Transaction | None:
         self._challenge_service.streamer_accept_challenge(
             challenge=challenge,
             changed_by=changed_by,
-            history_collector=history_entries,
         )
         # TODO: Add notification to viewer
         return None
@@ -164,12 +160,10 @@ class ToggleChallengeStatusInteractor:
         challenge: Challenge,
         changed_by,
         now: datetime,
-        history_entries: list,
     ) -> Transaction:
         self._challenge_service.streamer_reject_challenge(
             challenge=challenge,
             changed_by=changed_by,
-            history_collector=history_entries,
         )
         viewer_wallet = await self._get_wallet_or_error(
             challenge.created_by,
@@ -199,12 +193,10 @@ class ToggleChallengeStatusInteractor:
         challenge: Challenge,
         changed_by,
         now: datetime,
-        history_entries: list,
     ) -> Transaction:
         self._challenge_service.viewer_reject_challenge(
             challenge=challenge,
             changed_by=changed_by,
-            history_collector=history_entries,
         )
         # TODO: Add notification to streamer
         current_duration = now - challenge.created_at.value
@@ -313,12 +305,10 @@ class ToggleChallengeStatusInteractor:
         challenge: Challenge,
         changed_by,
         now: datetime,
-        history_entries: list,
     ) -> Transaction | None:
         self._challenge_service.streamer_complete_challenge(
             challenge=challenge,
             changed_by=changed_by,
-            history_collector=history_entries,
         )
         # TODO: Add notification to viewer to confirm challenge
         return None
@@ -329,12 +319,10 @@ class ToggleChallengeStatusInteractor:
         challenge: Challenge,
         changed_by,
         now: datetime,
-        history_entries: list,
     ) -> Transaction:
         self._challenge_service.viewer_confirm_challenge(
             challenge=challenge,
             changed_by=changed_by,
-            history_collector=history_entries,
         )
         dareus_earn = challenge.amount * 0.1
         streamer_earn = challenge.amount - dareus_earn

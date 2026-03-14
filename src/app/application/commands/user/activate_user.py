@@ -18,9 +18,9 @@ from app.application.common.services.authorization.permissions import (
 from app.application.common.services.current_user import CurrentUserService
 from app.domain.user.user import User
 from app.domain.user.user_role import UserRole
-from app.domain.user.exceptions import UserNotFoundByUserIdError, UserNotFoundByUsernameError
+from app.domain.user.exceptions import UserNotFoundByUserIdError
 from app.domain.user.service import UserService
-from app.domain.shared.value_objects.id import UserId, Username
+from app.domain.shared.value_objects.id import UserId
 
 log = logging.getLogger(__name__)
 

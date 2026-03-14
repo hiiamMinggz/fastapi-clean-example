@@ -1,3 +1,4 @@
+
 import logging
 from dataclasses import dataclass
 from typing import TypedDict
@@ -108,7 +109,6 @@ class CreateChallengeInteractor:
             raise DomainError("Assigned to is not a valid streamer")
         
         challenge_amount = ChallengeAmount(request_data.amount)
-        history_entries: list = []
         
         #create challenge
         challenge = self._challenge_service.create_challenge(
@@ -119,7 +119,6 @@ class CreateChallengeInteractor:
             amount=challenge_amount,
             streamer_fixed_amount=streamer.min_amount_challenge,
             expires_at=ExpiresAt(request_data.expires_at),
-            history_collector=history_entries,
         )
         #debit wallet
         self._wallet_service.debit(

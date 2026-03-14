@@ -34,9 +34,14 @@ class Transaction(Entity[TransactionId]):
         self.amount = amount
         self.reference_id = reference_id
         self.reference_type = reference_type
-        self.ledger_entries = ledger_entries
+        # Mutable storage for ORM internals; public access is immutable.
+        self._ledger_entries = list(ledger_entries)
         self.created_at = created_at
         self.validate()
+
+    @property
+    def ledger_entries(self) -> Tuple[LedgerEntry, ...]:
+        return tuple(self._ledger_entries)
 
     def validate(self) -> None:
         self._validate_payer()

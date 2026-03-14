@@ -1,7 +1,7 @@
 from sqlalchemy import UUID, Boolean, Column, DateTime, Numeric, Table
 from sqlalchemy.orm import composite
 
-from app.domain.shared.value_objects.id import UserId
+from app.domain.shared.value_objects.id import UserId, StreamerId
 from app.domain.shared.value_objects.time import CreatedAt, UpdatedAt, VerifiedAt
 from app.domain.user.streamer import Streamer
 from app.domain.user.value_objects import StreamerChallengeFixedAmount
@@ -28,7 +28,7 @@ def map_streamers_table() -> None:
         Streamer,
         streamers_table,
         properties={
-            "id_": composite(UserId, streamers_table.c.id),
+            "id_": composite(StreamerId, streamers_table.c.id),
             "user_id": composite(UserId, streamers_table.c.user_id),
             "is_verified": streamers_table.c.is_verified,
             "min_amount_challenge": composite(

@@ -6,9 +6,9 @@ from app.domain.challenge.challenge_status import ChallengeStatus
 
 from app.domain.challenge.value_objects import ChallengeAmount, Description, Title
 from app.domain.shared.value_objects.fee import ChallengeFee
-from app.domain.shared.value_objects.id import ProductId
+from app.domain.shared.value_objects.id import ProductId, StreamerId, UserId
 from app.domain.shared.value_objects.time import AcceptedAt, CreatedAt, ExpiresAt
-from app.domain.user.value_objects import StreamerChallengeFixedAmount, UserId, UserId
+from app.domain.user.value_objects import StreamerChallengeFixedAmount
 from app.infrastructure.persistence_sqla.registry import mapping_registry
 
 challenges_table = Table(
@@ -43,7 +43,7 @@ def map_challenges_table() -> None:
             "title": composite(Title, challenges_table.c.title),
             "description": composite(Description, challenges_table.c.description),
             "created_by": composite(UserId, challenges_table.c.created_by),
-            "assigned_to": composite(UserId, challenges_table.c.assigned_to),
+            "assigned_to": composite(StreamerId, challenges_table.c.assigned_to),
             "amount": composite(ChallengeAmount, challenges_table.c.amount),
             "fee": composite(ChallengeFee, challenges_table.c.fee),
             "streamer_fixed_amount": composite(StreamerChallengeFixedAmount, challenges_table.c.streamer_fixed_amount),
