@@ -1,18 +1,16 @@
 from datetime import datetime, timezone
+from app.domain.shared.value_objects.id import UserId, StreamerId
 from app.domain.user.streamer import Streamer
 from app.domain.user.user import User
 from app.domain.user.user_role import UserRole
 
 from app.domain.user.value_objects import (
     StreamerChallengeFixedAmount,
-    StreamerId,
-    UserId,
     UserPasswordHash,
     Username,
     Email,
     Credibility,
     RawPassword,
-    VerifiedBy
 )
 from app.domain.shared.value_objects.time import CreatedAt, UpdatedAt, VerifiedAt
 from app.domain.user.ports import PasswordHasher
@@ -23,10 +21,10 @@ from app.domain.user.exceptions import ActivationChangeNotPermittedError, RoleAs
 class UserService:
     def __init__(
         self,
-        user_id_generator: IdGenerator,
+        id_generator: IdGenerator,
         password_hasher: PasswordHasher,
     ) -> None:
-        self._user_id_generator = user_id_generator
+        self._id_generator = id_generator
         self._password_hasher = password_hasher
 
     def create_user(
@@ -37,7 +35,7 @@ class UserService:
         email: Email,
     ) -> User:
         
-        user_id = UserId(self._user_id_generator())
+        user_id = UserId(self._id_generator())
         password_hash = UserPasswordHash(self._password_hasher.hash(raw_password))
         now = datetime.now(timezone.utc)
 
@@ -61,7 +59,7 @@ class UserService:
         disable_challenges: bool,
     ) -> Streamer:
         
-        streamer_id = StreamerId(self._user_id_generator())
+        streamer_id = StreamerId(self._id_generator())
         now = datetime.now(timezone.utc)
 
         return Streamer(
@@ -73,7 +71,7 @@ class UserService:
             created_at=CreatedAt(now),
             updated_at=UpdatedAt(now),
             verified_at=VerifiedAt(None),
-            verified_by=VerifiedBy(None),
+            verified_by=UserId(None),
         )
         
     def is_password_valid(self, user: User, raw_password: RawPassword) -> bool:

@@ -1,12 +1,11 @@
-from sqlalchemy import UUID, Column, DateTime, Enum, JSON, Numeric, Table
+from sqlalchemy import UUID, Column, DateTime, Enum, Numeric, Table
 from sqlalchemy.orm import composite, relationship
 
+from app.domain.shared.entities.ledger.account_type import AccountType
 from app.domain.shared.entities.transaction.transaction import Transaction
 from app.domain.shared.entities.transaction.transaction_type import TransactionType
-from app.domain.shared.entities.transaction.value_objects import (
-    ReferenceId,
-    TransactionId,
-)
+from app.domain.shared.enums import ProductType
+from app.domain.shared.value_objects.id import ProductId, TransactionId, WalletId
 from app.domain.shared.value_objects.time import CreatedAt
 from app.domain.shared.value_objects.token import Token
 from app.infrastructure.persistence_sqla.mappings.ledger_entry import (
@@ -23,9 +22,11 @@ transactions_table = Table(
         Enum(TransactionType, name="transaction_type"),
         nullable=False,
     ),
+    Column("payer_type", Enum(AccountType, name="account_type"), nullable=False),
+    Column("payer_id", UUID(as_uuid=True), nullable=True),
     Column("amount", Numeric(12, 2), nullable=False),
     Column("reference_id", UUID(as_uuid=True), nullable=False),
-    Column("metadata", JSON, nullable=False),
+    Column("reference_type", Enum(ProductType, name="product_type"), nullable=False),
     Column("created_at", DateTime(timezone=True), nullable=False),
 )
 
@@ -37,11 +38,13 @@ def map_transactions_table() -> None:
         properties={
             "id_": composite(TransactionId, transactions_table.c.id),
             "transaction_type": transactions_table.c.transaction_type,
+            "payer_type": transactions_table.c.payer_type,
+            "payer_id": composite(WalletId, transactions_table.c.payer_id),
             "amount": composite(Token, transactions_table.c.amount),
-            "reference_id": composite(ReferenceId, transactions_table.c.reference_id),
-            "metadata": transactions_table.c.metadata,
+            "reference_id": composite(ProductId, transactions_table.c.reference_id),
+            "reference_type": transactions_table.c.reference_type,
             "created_at": composite(CreatedAt, transactions_table.c.created_at),
-            "ledger_entries": relationship(
+            "_ledger_entries": relationship(
                 "LedgerEntry",
                 collection_class=list,
                 cascade="all, delete-orphan",

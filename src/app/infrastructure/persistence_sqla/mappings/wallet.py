@@ -4,8 +4,7 @@ from sqlalchemy.orm import composite
 from app.domain.shared.value_objects.time import CreatedAt, UpdatedAt
 from app.domain.wallet.value_objects import Balance
 from app.domain.wallet.wallet import Wallet
-from app.domain.user.value_objects import UserId
-from app.domain.wallet.value_objects import WalletId
+from app.domain.shared.value_objects.id import UserId, WalletId
 
 from app.infrastructure.persistence_sqla.registry import mapping_registry
 

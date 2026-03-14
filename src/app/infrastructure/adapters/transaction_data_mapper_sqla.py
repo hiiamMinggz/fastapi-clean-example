@@ -5,7 +5,7 @@ from app.application.common.ports.transaction_command_gateway import (
     TransactionCommandGateway,
 )
 from app.domain.shared.entities.transaction.transaction import Transaction
-from app.domain.shared.entities.transaction.value_objects import TransactionId
+from app.domain.shared.value_objects.id import TransactionId
 from app.infrastructure.adapters.constants import DB_QUERY_FAILED
 from app.infrastructure.adapters.types import MainAsyncSession
 from app.infrastructure.exceptions.gateway import DataMapperError

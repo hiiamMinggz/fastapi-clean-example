@@ -5,19 +5,20 @@ from unittest.mock import MagicMock
 import pytest
 
 from app.domain.base import DomainError
+from app.domain.challenge.challenge import Challenge
 from app.domain.challenge.challenge_status import ChallengeStatus
 from app.domain.challenge.service import ChallengeService
 from app.domain.challenge.value_objects import ChallengeAmount, Description, Title
-from app.domain.shared.value_objects.time import CreatedAt, ExpiresAt
-from tests.app.unit.factories.challenge import (
-    create_challenge,
+from app.domain.shared.value_objects.fee import ChallengeFee
+from app.domain.shared.value_objects.time import AcceptedAt, CreatedAt, ExpiresAt
+from tests.app.unit.factories.value_objects import (
     create_challenge_amount,
     create_challenge_id,
     create_description,
+    create_id,
     create_streamer_fixed_amount,
     create_title,
 )
-from tests.app.unit.factories.value_objects import create_id
 
 
 class FixedDateTime(datetime):
@@ -31,6 +32,34 @@ def _patch_datetime(monkeypatch: pytest.MonkeyPatch, fixed_now: datetime) -> Non
     monkeypatch.setattr(
         "app.domain.challenge.service.datetime",
         FixedDateTime,
+    )
+
+def _create_challenge(
+    *,
+    status: ChallengeStatus = ChallengeStatus.PENDING,
+    created_at: CreatedAt | None = None,
+    expires_at: ExpiresAt | None = None,
+    accepted_at: AcceptedAt | None = None,
+    amount: ChallengeAmount | None = None,
+) -> Challenge:
+    created_at = created_at or CreatedAt(datetime(2024, 1, 1, tzinfo=timezone.utc))
+    expires_at = expires_at or ExpiresAt(created_at.value + timedelta(days=1))
+    amount = amount or create_challenge_amount(Decimal("100.00"))
+    streamer_fixed_amount = create_streamer_fixed_amount(Decimal("10.00"))
+
+    return Challenge(
+        id_=create_challenge_id(),
+        title=create_title(),
+        description=create_description(),
+        created_by=create_id(),
+        assigned_to=create_id(),
+        amount=amount,
+        fee=ChallengeFee(ChallengeFee.DEFAULT_CHALLENGE_FEE),
+        streamer_fixed_amount=streamer_fixed_amount,
+        status=status,
+        created_at=created_at,
+        expires_at=expires_at,
+        accepted_at=accepted_at,
     )
 
 
@@ -48,7 +77,7 @@ def test_create_challenge_sets_defaults(
     description = create_description("Do something cool")
     created_by = create_id()
     assigned_to = create_id()
-    amount = create_challenge_amount()
+    amount = create_challenge_amount(Decimal("100.00"))
     streamer_amount = create_streamer_fixed_amount()
 
     challenge = sut.create_challenge(
@@ -80,7 +109,7 @@ def test_update_content_when_pending(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     sut = ChallengeService(challenge_id_generator)
-    challenge = create_challenge(status=ChallengeStatus.PENDING)
+    challenge = _create_challenge(status=ChallengeStatus.PENDING)
     fixed_now = datetime(2024, 1, 2, 9, 0, tzinfo=timezone.utc)
     _patch_datetime(monkeypatch, fixed_now)
     new_title = Title("New title")
@@ -101,7 +130,7 @@ def test_update_content_rejects_non_pending(
     challenge_id_generator: MagicMock,
 ) -> None:
     sut = ChallengeService(challenge_id_generator)
-    challenge = create_challenge(status=ChallengeStatus.STREAMER_ACCEPTED)
+    challenge = _create_challenge(status=ChallengeStatus.STREAMER_ACCEPTED)
 
     with pytest.raises(DomainError):
         sut.update_challenge_content(
@@ -116,7 +145,7 @@ def test_update_amount_for_pending(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     sut = ChallengeService(challenge_id_generator)
-    challenge = create_challenge(
+    challenge = _create_challenge(
         status=ChallengeStatus.PENDING,
         amount=create_challenge_amount(ChallengeAmount.ZERO + Decimal("10.00")),
     )
@@ -134,7 +163,7 @@ def test_update_amount_requires_increase_for_accepted(
     challenge_id_generator: MagicMock,
 ) -> None:
     sut = ChallengeService(challenge_id_generator)
-    challenge = create_challenge(
+    challenge = _create_challenge(
         status=ChallengeStatus.STREAMER_ACCEPTED,
         amount=create_challenge_amount(Decimal("30.00")),
     )
@@ -148,7 +177,7 @@ def test_update_amount_rejects_disallowed_status(
     challenge_id_generator: MagicMock,
 ) -> None:
     sut = ChallengeService(challenge_id_generator)
-    challenge = create_challenge(status=ChallengeStatus.DONE)
+    challenge = _create_challenge(status=ChallengeStatus.DONE)
     new_amount = create_challenge_amount(Decimal("50.00"))
 
     with pytest.raises(DomainError):
@@ -160,7 +189,7 @@ def test_extend_deadline_updates_when_later(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     sut = ChallengeService(challenge_id_generator)
-    challenge = create_challenge(status=ChallengeStatus.PENDING)
+    challenge = _create_challenge(status=ChallengeStatus.PENDING)
     new_expiration = ExpiresAt(challenge.expires_at.value + timedelta(days=1))
     fixed_now = datetime(2024, 1, 4, 8, 0, tzinfo=timezone.utc)
     _patch_datetime(monkeypatch, fixed_now)
@@ -175,7 +204,7 @@ def test_extend_deadline_rejects_earlier_or_equal(
     challenge_id_generator: MagicMock,
 ) -> None:
     sut = ChallengeService(challenge_id_generator)
-    challenge = create_challenge(status=ChallengeStatus.STREAMER_ACCEPTED)
+    challenge = _create_challenge(status=ChallengeStatus.STREAMER_ACCEPTED)
 
     with pytest.raises(DomainError):
         sut.extend_challenge_deadline(challenge, expires_at=challenge.expires_at)
@@ -186,7 +215,7 @@ def test_accept_challenge_sets_status_and_timestamp(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     sut = ChallengeService(challenge_id_generator)
-    challenge = create_challenge(status=ChallengeStatus.PENDING, accepted_at=None)
+    challenge = _create_challenge(status=ChallengeStatus.PENDING, accepted_at=None)
     fixed_now = datetime(2024, 1, 5, 12, 0, tzinfo=timezone.utc)
     _patch_datetime(monkeypatch, fixed_now)
 
@@ -200,7 +229,7 @@ def test_accept_challenge_rejects_non_pending(
     challenge_id_generator: MagicMock,
 ) -> None:
     sut = ChallengeService(challenge_id_generator)
-    challenge = create_challenge(status=ChallengeStatus.STREAMER_ACCEPTED)
+    challenge = _create_challenge(status=ChallengeStatus.STREAMER_ACCEPTED)
 
     with pytest.raises(DomainError):
         sut.streamer_accept_challenge(challenge)
@@ -211,7 +240,7 @@ def test_streamer_rejects_pending_challenge(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     sut = ChallengeService(challenge_id_generator)
-    challenge = create_challenge(status=ChallengeStatus.PENDING)
+    challenge = _create_challenge(status=ChallengeStatus.PENDING)
     fixed_now = datetime(2024, 1, 6, 10, 0, tzinfo=timezone.utc)
     _patch_datetime(monkeypatch, fixed_now)
 
@@ -226,7 +255,7 @@ def test_viewer_rejects_pending_or_accepted(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     sut = ChallengeService(challenge_id_generator)
-    challenge = create_challenge(status=ChallengeStatus.STREAMER_ACCEPTED)
+    challenge = _create_challenge(status=ChallengeStatus.STREAMER_ACCEPTED)
     fixed_now = datetime(2024, 1, 7, 11, 0, tzinfo=timezone.utc)
     _patch_datetime(monkeypatch, fixed_now)
 
@@ -243,7 +272,7 @@ def test_streamer_complete_challenge_within_duration(
     sut = ChallengeService(challenge_id_generator)
     created_at = datetime(2024, 1, 1, tzinfo=timezone.utc)
     expires_at = created_at + timedelta(days=1)
-    challenge = create_challenge(
+    challenge = _create_challenge(
         status=ChallengeStatus.STREAMER_ACCEPTED,
         created_at=CreatedAt(created_at),
         expires_at=ExpiresAt(expires_at),
@@ -264,7 +293,7 @@ def test_streamer_complete_challenge_after_duration_fails(
     sut = ChallengeService(challenge_id_generator)
     created_at = datetime(2024, 1, 1, tzinfo=timezone.utc)
     expires_at = created_at + timedelta(hours=1)
-    challenge = create_challenge(
+    challenge = _create_challenge(
         status=ChallengeStatus.STREAMER_ACCEPTED,
         created_at=CreatedAt(created_at),
         expires_at=ExpiresAt(expires_at),
@@ -281,7 +310,7 @@ def test_viewer_confirm_after_streamer_completion(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     sut = ChallengeService(challenge_id_generator)
-    challenge = create_challenge(status=ChallengeStatus.STREAMER_COMPLETED)
+    challenge = _create_challenge(status=ChallengeStatus.STREAMER_COMPLETED)
     fixed_now = datetime(2024, 1, 8, 14, 0, tzinfo=timezone.utc)
     _patch_datetime(monkeypatch, fixed_now)
 
@@ -295,7 +324,7 @@ def test_viewer_confirm_invalid_status_raises(
     challenge_id_generator: MagicMock,
 ) -> None:
     sut = ChallengeService(challenge_id_generator)
-    challenge = create_challenge(status=ChallengeStatus.PENDING)
+    challenge = _create_challenge(status=ChallengeStatus.PENDING)
 
     with pytest.raises(DomainError):
         sut.viewer_confirm_challenge(challenge)
@@ -306,7 +335,7 @@ def test_done_challenge_transitions_to_done(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     sut = ChallengeService(challenge_id_generator)
-    challenge = create_challenge(status=ChallengeStatus.VIEWER_CONFIRMED)
+    challenge = _create_challenge(status=ChallengeStatus.VIEWER_CONFIRMED)
     fixed_now = datetime(2024, 1, 9, 16, 0, tzinfo=timezone.utc)
     _patch_datetime(monkeypatch, fixed_now)
 
@@ -320,7 +349,7 @@ def test_done_challenge_requires_viewer_confirmed(
     challenge_id_generator: MagicMock,
 ) -> None:
     sut = ChallengeService(challenge_id_generator)
-    challenge = create_challenge(status=ChallengeStatus.STREAMER_ACCEPTED)
+    challenge = _create_challenge(status=ChallengeStatus.STREAMER_ACCEPTED)
 
     with pytest.raises(DomainError):
         sut.done_challenge(challenge)

@@ -4,10 +4,11 @@ from sqlalchemy.orm import composite
 from app.domain.challenge.challenge import Challenge
 from app.domain.challenge.challenge_status import ChallengeStatus
 
-from app.domain.challenge.value_objects import ChallengeAmount, ChallengeId, Description, Title
+from app.domain.challenge.value_objects import ChallengeAmount, Description, Title
 from app.domain.shared.value_objects.fee import ChallengeFee
+from app.domain.shared.value_objects.id import ProductId, StreamerId, UserId
 from app.domain.shared.value_objects.time import AcceptedAt, CreatedAt, ExpiresAt
-from app.domain.user.value_objects import StreamerChallengeFixedAmount, StreamerId, UserId
+from app.domain.user.value_objects import StreamerChallengeFixedAmount
 from app.infrastructure.persistence_sqla.registry import mapping_registry
 
 challenges_table = Table(
@@ -38,7 +39,7 @@ def map_challenges_table() -> None:
         Challenge,
         challenges_table,
         properties={
-            "id_": composite(ChallengeId, challenges_table.c.id),
+            "id_": composite(ProductId, challenges_table.c.id),
             "title": composite(Title, challenges_table.c.title),
             "description": composite(Description, challenges_table.c.description),
             "created_by": composite(UserId, challenges_table.c.created_by),

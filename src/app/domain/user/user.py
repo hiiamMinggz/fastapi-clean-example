@@ -1,12 +1,12 @@
 from app.domain.base import Entity
 from app.domain.user.user_role import UserRole
 from app.domain.user.value_objects import (
-    UserId,
     UserPasswordHash,
     Username,
     Email,
     Credibility,
 )
+from app.domain.shared.value_objects.id import UserId
 from app.domain.shared.value_objects.time import CreatedAt, UpdatedAt
 
 class User(Entity[UserId]):

@@ -1,9 +1,8 @@
 from abc import abstractmethod
 from typing import Protocol
 
-from app.domain.user.value_objects import UserId
+from app.domain.shared.value_objects.id import UserId, WalletId
 from app.domain.wallet.wallet import Wallet
-from app.domain.wallet.value_objects import WalletId
 
 
 class WalletCommandGateway(Protocol):

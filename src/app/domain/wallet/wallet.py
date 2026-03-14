@@ -1,6 +1,6 @@
-from app.domain.base import DomainFieldError, Entity
-from app.domain.user.value_objects import UserId
-from app.domain.wallet.value_objects import WalletId, Balance
+from app.domain.base import Entity
+from app.domain.shared.value_objects.id import UserId, WalletId
+from app.domain.wallet.value_objects import Balance
 from app.domain.shared.value_objects.time import CreatedAt, UpdatedAt
 
 class Wallet(Entity[WalletId]):

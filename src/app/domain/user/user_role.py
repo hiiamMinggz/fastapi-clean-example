@@ -4,6 +4,7 @@ from enum import StrEnum
 class UserRole(StrEnum):
     VIEWER = "viewer"
     STREAMER = "streamer"
+    ADMIN = "admin"
     SUPER_ADMIN = "super_admin"
 
     @property

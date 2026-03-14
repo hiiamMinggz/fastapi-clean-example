@@ -16,11 +16,11 @@ from app.application.common.services.authorization.permissions import (
     UserManagementContext,
 )
 from app.application.common.services.current_user import CurrentUserService
+from app.domain.shared.value_objects.id import UserId
 from app.domain.user.user import User
 from app.domain.user.exceptions import UserNotFoundByUserIdError, UserNotFoundByUsernameError
 from app.domain.user.service import UserService
-from app.domain.user.value_objects import RawPassword, UserId
-from app.domain.user.value_objects import Username
+from app.domain.user.value_objects import RawPassword
 
 log = logging.getLogger(__name__)
 
@@ -63,7 +63,7 @@ class ChangePasswordInteractor:
 
         current_user = await self._current_user_service.get_current_user()
 
-        user_id = UserId(request_data.username)
+        user_id = UserId(request_data.user_id)
         password = RawPassword(request_data.password)
         user: User | None = await self._user_command_gateway.read_by_id(
             user_id,

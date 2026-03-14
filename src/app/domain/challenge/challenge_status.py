@@ -8,5 +8,5 @@ class ChallengeStatus(StrEnum):
     STREAMER_COMPLETED = "streamer_completed"
     VIEWER_CONFIRMED = "viewer_confirmed"
     VIEWER_REJECTED = "viewer_rejected"
-    REFUNDED = "refunded"
+    FAIL = "fail"
     DONE = "done"

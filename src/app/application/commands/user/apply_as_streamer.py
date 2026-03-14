@@ -19,13 +19,12 @@ from app.application.common.services.authorization.permissions import (
     UserManagementContext,
 )
 from app.application.common.services.current_user import CurrentUserService
+from app.domain.shared.value_objects.id import UserId
 from app.domain.user.exceptions import UserNotFoundByUserIdError
 from app.domain.user.service import UserService
 from app.domain.user.streamer import Streamer
-from app.domain.user.value_objects import (
-    StreamerChallengeFixedAmount,
-    UserId,
-)
+from app.domain.user.value_objects import StreamerChallengeFixedAmount
+
 
 log = logging.getLogger(__name__)
 
@@ -113,7 +112,7 @@ class ApplyAsStreamerInteractor:
         await self._transaction_manager.commit()
 
         log.info(
-            "Apply as streamer: done. UserId: '%s', StreamerId: '%s'.",
+            "Apply as streamer: done. UserId: '%s', UserId: '%s'.",
             user.id_.value,
             streamer.id_.value,
         )

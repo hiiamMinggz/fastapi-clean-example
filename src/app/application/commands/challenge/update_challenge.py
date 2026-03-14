@@ -26,12 +26,12 @@ from app.domain.challenge.challenge import Challenge
 from app.domain.challenge.exceptions import ChallengeNotFoundByIdError
 from app.domain.challenge.service import ChallengeService
 from app.domain.challenge.value_objects import (
-    ChallengeId,
     Title,
     Description,
     ChallengeAmount,
 )
-from app.domain.shared.value_objects.time import AcceptedAt, ExpiresAt, UpdatedAt
+from app.domain.shared.value_objects.id import ProductId
+from app.domain.shared.value_objects.time import ExpiresAt
 
 log = logging.getLogger(__name__)
 
@@ -73,7 +73,7 @@ class UpdateChallengeInteractor:
         )
         current_user = await self._current_user_service.get_current_user()
 
-        challenge_id = ChallengeId(request_data.challenge_id)
+        challenge_id = ProductId(request_data.challenge_id)
         challenge: Challenge | None = await self._challenge_command_gateway.read_by_id(challenge_id)
         if challenge is None:
             raise ChallengeNotFoundByIdError()
@@ -91,6 +91,7 @@ class UpdateChallengeInteractor:
                 challenge=challenge,
                 title=Title(request_data.title),
                 description=Description(request_data.description),
+                changed_by=current_user.id_,
             )
         if request_data.amount is not None:
             authorize(
@@ -103,6 +104,7 @@ class UpdateChallengeInteractor:
             self._challenge_service.update_challenge_amount(
                 challenge=challenge,
                 amount=ChallengeAmount(request_data.amount),
+                changed_by=current_user.id_,
             )
         if request_data.expires_at is not None:
             authorize(
@@ -115,6 +117,7 @@ class UpdateChallengeInteractor:
             self._challenge_service.extend_challenge_deadline(
                 challenge=challenge,
                 expires_at=ExpiresAt(request_data.expires_at),
+                changed_by=current_user.id_,
             )
         
         await self._flusher.flush()

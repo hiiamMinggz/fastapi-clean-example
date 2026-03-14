@@ -1,10 +1,11 @@
 from sqlalchemy import UUID, Boolean, Column, Enum, LargeBinary, String, Table, NUMERIC, DateTime, DOUBLE_PRECISION
 from sqlalchemy.orm import composite
 
+from app.domain.shared.value_objects.id import UserId
 from app.domain.shared.value_objects.time import CreatedAt, UpdatedAt
 from app.domain.user.user import User
 from app.domain.user.user_role import UserRole
-from app.domain.user.value_objects import Credibility, Email, UserId, UserPasswordHash
+from app.domain.user.value_objects import Credibility, Email, UserPasswordHash
 from app.domain.user.value_objects import Username
 
 

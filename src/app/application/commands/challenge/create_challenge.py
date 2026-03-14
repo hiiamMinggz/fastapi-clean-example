@@ -1,8 +1,9 @@
+
 import logging
 from dataclasses import dataclass
 from typing import TypedDict
 from uuid import UUID
-from datetime import datetime, timezone
+from datetime import datetime
 from decimal import Decimal
 from app.application.common.ports.flusher import Flusher
 from app.application.common.ports.streamer_command_gateway import StreamerCommandGateway
@@ -16,10 +17,8 @@ from app.application.common.ports.user_command_gateway import UserCommandGateway
 from app.application.common.ports.wallet_command_gateway import WalletCommandGateway
 from app.application.common.services.current_user import CurrentUserService
 
-from app.domain.shared.entities.ledger.account_type import AccountType
-from app.domain.shared.entities.transaction.transaction_type import TransactionType
+from app.domain.shared.enums import ProductType
 from app.domain.user.streamer import Streamer
-from app.domain.user.user_role import UserRole
 from app.domain.base import DomainError
 from app.domain.challenge.service import ChallengeService
 from app.domain.wallet.service import WalletService
@@ -30,9 +29,8 @@ from app.domain.challenge.value_objects import (
     Description,
     ChallengeAmount,
 )
-from app.domain.user.value_objects import UserId
-from app.domain.shared.value_objects.time import CreatedAt, ExpiresAt
-from app.domain.shared.value_objects.token import Token
+from app.domain.shared.value_objects.id import UserId
+from app.domain.shared.value_objects.time import ExpiresAt
 
 log = logging.getLogger(__name__)
 
@@ -127,21 +125,12 @@ class CreateChallengeInteractor:
             wallet=current_user_wallet,
             amount = challenge_amount,
         )
-        # init double entry ledger
-        user_wallet_debit_entry = self._ledger_service.create_user_wallet_debit_entry(
-            account_id=current_user_wallet.id_,
-            debit=challenge_amount,
-        )
-        escrow_credit_entry = self._ledger_service.create_escrow_credit_entry(
-            credit=challenge_amount,
-        )
         # write transaction
-        transaction = self._transaction_service.create_transaction(
-            transaction_type=TransactionType.ESCROW_LOCK,
+        transaction = self._transaction_service.create_escrow_lock_transaction(
+            payer_id=current_user_wallet.id_,
             amount=challenge_amount,
             reference_id=challenge.id_,
-            ledger_entries=[user_wallet_debit_entry, escrow_credit_entry],
-            metadata={"reason": "Challenge Created"},
+            reference_type=ProductType.CHALLENGE,
         )
         self._challenge_command_gateway.add(challenge)
         self._transaction_command_gateway.add(transaction)

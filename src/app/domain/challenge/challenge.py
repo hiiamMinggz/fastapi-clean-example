@@ -1,31 +1,33 @@
 from datetime import timedelta
 from app.domain.base import Entity, DomainError
+from app.domain.shared.value_objects.id import ProductId
 from app.domain.shared.value_objects.time import CreatedAt, ExpiresAt, AcceptedAt
-from app.domain.user.value_objects import UserId, StreamerChallengeFixedAmount
+from app.domain.shared.value_objects.id import UserId, StreamerId
 from app.domain.challenge.value_objects import (
-    ChallengeId,
     Title,
     Description,
     ChallengeAmount,
 )
 from app.domain.shared.value_objects.fee import ChallengeFee
 from app.domain.challenge.challenge_status import ChallengeStatus
+from app.domain.user.value_objects import StreamerChallengeFixedAmount
 
 
-class Challenge(Entity[ChallengeId]):
+class Challenge(Entity[ProductId]):
     def __init__(
         self,
         *,
-        id_: ChallengeId,
+        id_: ProductId,
         title: Title,
         description: Description,
         created_by: UserId,
-        assigned_to: UserId,
+        assigned_to: StreamerId,
         amount: ChallengeAmount,
         fee: ChallengeFee,
         streamer_fixed_amount: StreamerChallengeFixedAmount,
         status: ChallengeStatus,
         created_at: CreatedAt,
+        #TODO: add delta time 
         expires_at: ExpiresAt,
         accepted_at: AcceptedAt,
     ) -> None:
@@ -64,12 +66,6 @@ class Challenge(Entity[ChallengeId]):
         if self.created_by == self.assigned_to:
             raise DomainError(
                 f"Challenge creator cannot be the same as assignee",
-            )
-    
-    def _accepted_validation(self) -> None:
-        if self.accepted_at.value is not None and self.accepted_at.value > self.expires_at.value:
-            raise DomainError(
-                f"Challenge accepted at must be less than or equal to expires at, but got {self.accepted_at} and {self.expires_at}.",
             )
     
     @property

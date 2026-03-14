@@ -2,7 +2,7 @@ from abc import abstractmethod
 from typing import Protocol
 
 from app.domain.challenge.challenge import Challenge
-from app.domain.challenge.value_objects import ChallengeId
+from app.domain.shared.value_objects.id import ProductId
 
 
 class ChallengeCommandGateway(Protocol):
@@ -11,6 +11,6 @@ class ChallengeCommandGateway(Protocol):
         """:raises DataMapperError:"""
 
     @abstractmethod
-    async def read_by_id(self, challenge_id: ChallengeId) -> Challenge | None:
+    async def read_by_id(self, challenge_id: ProductId) -> Challenge | None:
         """:raises DataMapperError:"""
     

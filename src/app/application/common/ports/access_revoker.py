@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Protocol
 
-from app.domain.user.value_objects import UserId
+from app.domain.shared.value_objects.id import UserId
 
 
 class AccessRevoker(Protocol):

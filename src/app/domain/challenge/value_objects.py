@@ -5,10 +5,6 @@ from app.domain.base import DomainFieldError, ValueObject
 from app.domain.shared.value_objects.token import Token
 from decimal import Decimal
 
-@dataclass(frozen=True, slots=True, repr=False)
-class ChallengeId(ValueObject):
-    value: UUID
-    
 
 @dataclass(frozen=True, slots=True, repr=False)
 class Title(ValueObject):

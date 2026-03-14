@@ -2,7 +2,7 @@ from typing import Any
 
 from app.domain.user.user_role import UserRole
 from app.domain.base import DomainError
-from app.domain.user.value_objects import UserId
+from app.domain.shared.value_objects.id import UserId
 from app.domain.user.value_objects import Username
 
 

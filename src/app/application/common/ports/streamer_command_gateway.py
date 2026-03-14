@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Protocol
 
-from app.domain.user.value_objects import StreamerId
+from app.domain.shared.value_objects.id import StreamerId
 from app.domain.user.streamer import Streamer
 
 class StreamerCommandGateway(Protocol):

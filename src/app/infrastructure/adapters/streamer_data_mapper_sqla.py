@@ -3,7 +3,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.application.common.ports.streamer_command_gateway import StreamerCommandGateway
 from app.domain.user.streamer import Streamer
-from app.domain.user.value_objects import StreamerId
+from app.domain.shared.value_objects.id import StreamerId
 from app.infrastructure.adapters.constants import DB_QUERY_FAILED
 from app.infrastructure.adapters.types import MainAsyncSession
 from app.infrastructure.exceptions.gateway import DataMapperError
