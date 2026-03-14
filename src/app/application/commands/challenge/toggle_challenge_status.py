@@ -17,6 +17,7 @@ from app.application.common.services.authorization.permissions import (
     ChallengeManagementContext,
 )
 from app.application.common.services.current_user import CurrentUserService
+from app.domain.base import DomainError
 from app.domain.challenge.challenge import Challenge
 from app.domain.challenge.exceptions import ChallengeNotFoundByIdError
 from app.domain.challenge.challenge_status import ChallengeStatus
@@ -25,11 +26,10 @@ from uuid import UUID
 from datetime import datetime, timezone
 
 from app.domain.shared.entities.ledger.account_type import AccountType
-from app.domain.shared.enums import ProductType
-
 from app.domain.shared.entities.transaction.service import TransactionService
 from app.domain.shared.entities.transaction.transaction import Transaction
 from app.domain.shared.entities.transaction.value_objects import Allocation
+from app.domain.shared.enums import ProductType
 from app.domain.shared.value_objects.id import ProductId
 from app.domain.wallet.service import WalletService
 from app.domain.wallet.wallet import Wallet

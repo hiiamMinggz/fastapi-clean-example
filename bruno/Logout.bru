@@ -1,0 +1,20 @@
+meta {
+  name: Logout
+  type: http
+  seq: 6
+}
+
+delete {
+  url: {{host}}/api/v1/account/logout
+  body: none
+  auth: inherit
+}
+
+headers {
+  Cookie: access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoX3Nlc3Npb25faWQiOiJTS2UxV2M4WVd6UXBKU0xiT1NwckFQdnJGS18wNk1seXlHUTNha1A0bXI4IiwiZXhwIjoxNzczNDkzMTIwfQ.6jiVs_VzUAwCodyFqasmGBoghY2CPEPKGFxlc6-K5NY
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
