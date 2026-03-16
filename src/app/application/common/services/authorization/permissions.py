@@ -8,6 +8,7 @@ from app.application.common.services.authorization.base import (
 from app.application.common.services.authorization.role_hierarchy import (
     SUBORDINATE_ROLES,
 )
+from app.domain.user.streamer import Streamer
 from app.domain.user.user import User
 from app.domain.challenge.challenge import Challenge
 from app.domain.user.user_role import UserRole
@@ -54,11 +55,22 @@ class CanManageRole(Permission[RoleManagementContext]):
         allowed_roles = self._role_hierarchy.get(context.subject.role, set())
         return context.target_role in allowed_roles
 
+@dataclass(frozen=True, kw_only=True)
+class ChallengeCreationContext(PermissionContext):
+    subject: User
+
+class CanCreateChallenge(Permission[ChallengeCreationContext]):
+    """Permission to create challenge.
+    Only the viewer can create challenge"""
+    
+    def is_satisfied_by(self, context: ChallengeCreationContext) -> bool:
+        return context.subject.role == UserRole.VIEWER
 
 @dataclass(frozen=True, kw_only=True)
 class ChallengeManagementContext(PermissionContext):
-    subject: User  # The user attempting the action
-    challenge: Challenge  # The challenge being modified
+    subject: User | Streamer
+    challenge: Challenge
+
 
 class CanUpdateChallengeContent(Permission[ChallengeManagementContext]):
     """Permission to update challenge title and description.
@@ -83,13 +95,3 @@ class CanExtendChallengeDeadline(Permission[ChallengeManagementContext]):
     def is_satisfied_by(self, context: ChallengeManagementContext) -> bool:
         return context.subject.id_ == context.challenge.created_by
         
-class CanChangeChallengeStatus(Permission[ChallengeManagementContext]):
-    """Permission to change challenge status.
-    Both the creator and the assignee can change status."""
-    
-    def is_satisfied_by(self, context: ChallengeManagementContext) -> bool:
-        is_involved = (
-            context.subject.id_ == context.challenge.created_by or
-            context.subject.id_ == context.challenge.assigned_to
-        )
-        return is_involved

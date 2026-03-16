@@ -3,19 +3,13 @@ from dataclasses import dataclass
 from typing import TypedDict
 
 from app.application.common.ports.flusher import Flusher
+from app.application.common.ports.streamer_command_gateway import StreamerCommandGateway
 from app.application.common.ports.transaction_command_gateway import TransactionCommandGateway
 from app.application.common.ports.transaction_manager import (
     TransactionManager,
 )
 from app.application.common.ports.challenge_command_gateway import ChallengeCommandGateway
 from app.application.common.ports.wallet_command_gateway import WalletCommandGateway
-from app.application.common.services.authorization.authorize import (
-    authorize,
-)
-from app.application.common.services.authorization.permissions import (
-    CanChangeChallengeStatus,
-    ChallengeManagementContext,
-)
 from app.application.common.services.current_user import CurrentUserService
 from app.domain.base import DomainError
 from app.domain.challenge.challenge import Challenge
@@ -31,6 +25,7 @@ from app.domain.shared.entities.transaction.transaction import Transaction
 from app.domain.shared.entities.transaction.value_objects import Allocation
 from app.domain.shared.enums import ProductType
 from app.domain.shared.value_objects.id import ProductId
+from app.domain.user.streamer import Streamer
 from app.domain.wallet.service import WalletService
 from app.domain.wallet.wallet import Wallet
 from app.domain.base import DomainError
@@ -56,6 +51,7 @@ class ToggleChallengeStatusInteractor:
         transaction_service: TransactionService,
         challenge_command_gateway: ChallengeCommandGateway,
         wallet_command_gateway: WalletCommandGateway,
+        streamer_command_gateway: StreamerCommandGateway,
         transaction_command_gateway: TransactionCommandGateway,
         flusher: Flusher,
         transaction_manager: TransactionManager,
@@ -66,6 +62,7 @@ class ToggleChallengeStatusInteractor:
         self._transaction_service = transaction_service
         self._challenge_command_gateway = challenge_command_gateway
         self._wallet_command_gateway = wallet_command_gateway
+        self._streamer_command_gateway = streamer_command_gateway
         self._transaction_command_gateway = transaction_command_gateway
         self._flusher = flusher
         self._transaction_manager = transaction_manager
@@ -92,15 +89,6 @@ class ToggleChallengeStatusInteractor:
         if challenge is None:
             raise ChallengeNotFoundByIdError()
 
-
-        # Authorize: can only update challenges created by the current user
-        authorize(
-            CanChangeChallengeStatus(),
-            context=ChallengeManagementContext(
-                subject=current_user,
-                challenge=challenge,
-            ),
-        )
         now = datetime.now(timezone.utc)
 
         handler_map = {
@@ -129,7 +117,7 @@ class ToggleChallengeStatusInteractor:
             "Toggle challenge status: done. Challenge ID: %s",
             challenge_id,
         )
-        return ToggleChallengeStatusResponse(message=f"Challenge {challenge_id} status {challenge.status} changed to {new_status}")
+        return ToggleChallengeStatusResponse(message=f"Challenge {challenge_id} changed to {new_status}")
 
     async def _get_wallet_or_error(self, user_id, *, label: str) -> Wallet:
         wallet = await self._wallet_command_gateway.read_by_user_id(
@@ -147,9 +135,13 @@ class ToggleChallengeStatusInteractor:
         changed_by,
         now: datetime,
     ) -> Transaction | None:
+        streamer: Streamer|None = await self._streamer_command_gateway.read_by_user_id(changed_by)
+        if streamer is None:
+            raise DomainError(f"Streamer not found")
+        
         self._challenge_service.streamer_accept_challenge(
             challenge=challenge,
-            changed_by=changed_by,
+            streamer_id=streamer.id_,
         )
         # TODO: Add notification to viewer
         return None
@@ -161,9 +153,13 @@ class ToggleChallengeStatusInteractor:
         changed_by,
         now: datetime,
     ) -> Transaction:
+        streamer: Streamer|None = await self._streamer_command_gateway.read_by_user_id(changed_by)
+        if streamer is None:
+            raise DomainError(f"Streamer not found")
+        
         self._challenge_service.streamer_reject_challenge(
             challenge=challenge,
-            changed_by=changed_by,
+            streamer_id=streamer.id_,
         )
         viewer_wallet = await self._get_wallet_or_error(
             challenge.created_by,
@@ -306,9 +302,13 @@ class ToggleChallengeStatusInteractor:
         changed_by,
         now: datetime,
     ) -> Transaction | None:
+        streamer: Streamer|None = await self._streamer_command_gateway.read_by_user_id(changed_by)
+        if streamer is None:
+            raise DomainError(f"Streamer not found")
+        
         self._challenge_service.streamer_complete_challenge(
             challenge=challenge,
-            changed_by=changed_by,
+            streamer_id=streamer.id_,
         )
         # TODO: Add notification to viewer to confirm challenge
         return None
@@ -322,7 +322,7 @@ class ToggleChallengeStatusInteractor:
     ) -> Transaction:
         self._challenge_service.viewer_confirm_challenge(
             challenge=challenge,
-            changed_by=changed_by,
+            user_id=changed_by,
         )
         dareus_earn = challenge.amount * 0.1
         streamer_earn = challenge.amount - dareus_earn

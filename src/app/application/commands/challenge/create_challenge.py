@@ -15,6 +15,10 @@ from app.application.common.ports.challenge_command_gateway import ChallengeComm
 
 from app.application.common.ports.user_command_gateway import UserCommandGateway
 from app.application.common.ports.wallet_command_gateway import WalletCommandGateway
+from app.application.common.services.authorization.authorize import (
+    authorize,
+)
+from app.application.common.services.authorization.permissions import CanCreateChallenge, ChallengeCreationContext
 from app.application.common.services.current_user import CurrentUserService
 
 from app.domain.shared.enums import ProductType
@@ -29,8 +33,9 @@ from app.domain.challenge.value_objects import (
     Description,
     ChallengeAmount,
 )
-from app.domain.shared.value_objects.id import UserId
+from app.domain.shared.value_objects.id import StreamerId, UserId
 from app.domain.shared.value_objects.time import ExpiresAt
+from app.domain.wallet.wallet import Wallet
 
 log = logging.getLogger(__name__)
 
@@ -94,7 +99,14 @@ class CreateChallengeInteractor:
         log.info("Create challenge: started.")
         #get current user
         current_user = await self._current_user_service.get_current_user()
-        current_user_wallet = await self._wallet_command_gateway.read_by_user_id(
+
+        authorize(
+            permission=CanCreateChallenge(),
+            context=ChallengeCreationContext(
+                subject=current_user,
+            ),
+        )
+        current_user_wallet: Wallet | None = await self._wallet_command_gateway.read_by_user_id(
             current_user.id_,
             for_update=True,
         )
@@ -102,7 +114,7 @@ class CreateChallengeInteractor:
             raise DomainError("Current user wallet not found")
 
         #check assigned_to is a valid streamer
-        streamer_id = UserId(request_data.assigned_to)
+        streamer_id = StreamerId(request_data.assigned_to)
         streamer: Streamer | None = await self._streamer_gateway.read_by_id(streamer_id)
 
         if streamer is None or streamer.disable_challenges:

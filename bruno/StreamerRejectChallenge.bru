@@ -1,0 +1,24 @@
+meta {
+  name: StreamerRejectChallenge
+  type: http
+  seq: 9
+}
+
+patch {
+  url: {{host}}/api/v1/challenges/:challenge_id/toggle-status
+  body: json
+  auth: inherit
+}
+
+params:path {
+  challenge_id: 019cf58b-b0c2-753d-b071-6ebbe1adf52c
+}
+
+body:json {
+  "streamer_rejected"
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

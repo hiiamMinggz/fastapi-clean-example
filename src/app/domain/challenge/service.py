@@ -55,6 +55,7 @@ class ChallengeService:
         self,
         challenge: Challenge,
         *,
+        user_id: UserId,
         title: Title,
         description: Description,
     ) -> None:
@@ -62,23 +63,32 @@ class ChallengeService:
             raise DomainError(
                 "Challenge contents can only be updated for PENDING challenges"
             )
-        else:
-            now = datetime.now(timezone.utc)
-            updated_at = UpdatedAt(now)
+        if user_id != challenge.created_by:
+            raise DomainError(
+                "Challenge contents can only be updated by the creator"
+            )
+        
+        now = datetime.now(timezone.utc)
+        updated_at = UpdatedAt(now)
 
-            challenge.title = title
-            challenge.description = description
-            challenge.updated_at = updated_at
+        challenge.title = title
+        challenge.description = description
+        challenge.updated_at = updated_at
 
     def update_challenge_amount(
         self,
         challenge: Challenge,
         *,
+        user_id: UserId,
         amount: ChallengeAmount,
     ) -> None:
         if challenge.status not in {ChallengeStatus.PENDING, ChallengeStatus.STREAMER_ACCEPTED}:
             raise DomainError(
                 "Challenge amount can only be updated for PENDING or ACCEPTED challenges"
+            )
+        if user_id != challenge.created_by:
+            raise DomainError(
+                "Challenge amount can only be updated by the creator"
             )
         if challenge.status == ChallengeStatus.STREAMER_ACCEPTED:
             if amount <= challenge.amount:
@@ -95,11 +105,16 @@ class ChallengeService:
         self,
         challenge: Challenge,
         *,
+        user_id: UserId,
         expires_at: ExpiresAt,
     ) -> None:
         if challenge.status not in {ChallengeStatus.PENDING, ChallengeStatus.STREAMER_ACCEPTED}:
             raise DomainError(
                 "Challenge deadline can only be extended for PENDING or ACCEPTED challenges"
+            )
+        if user_id != challenge.created_by:
+            raise DomainError(
+                "Challenge deadline can only be extended by the creator"
             )
         if expires_at <= challenge.expires_at:
             raise DomainError(
@@ -114,6 +129,8 @@ class ChallengeService:
     def streamer_accept_challenge(
         self,
         challenge: Challenge,
+        *,
+        streamer_id: StreamerId,
     ) -> None:
         if challenge.status == ChallengeStatus.STREAMER_ACCEPTED:
             raise DomainError(
@@ -122,6 +139,10 @@ class ChallengeService:
         if challenge.status != ChallengeStatus.PENDING:
             raise DomainError(
                 "Challenge can only be ACCEPTED for PENDING challenges"
+            )
+        if streamer_id != challenge.assigned_to:
+            raise DomainError(
+                "Challenge can only be ACCEPTED by the assigned streamer"
             )
         
         now = datetime.now(timezone.utc)
@@ -133,6 +154,8 @@ class ChallengeService:
     def streamer_reject_challenge(
         self,
         challenge: Challenge,
+        *,
+        streamer_id: StreamerId,
     ) -> None:
         if challenge.status == ChallengeStatus.STREAMER_REJECTED:
             raise DomainError(
@@ -141,6 +164,10 @@ class ChallengeService:
         if challenge.status != ChallengeStatus.PENDING:
             raise DomainError(
                 "Challenge can only be REJECTED by the Streamer for PENDING challenges"
+            )
+        if streamer_id != challenge.assigned_to:
+            raise DomainError(
+                "Challenge can only be REJECTED by the assigned streamer"
             )
         
         now = datetime.now(timezone.utc)
@@ -152,6 +179,8 @@ class ChallengeService:
     def viewer_reject_challenge(
         self,
         challenge: Challenge,
+        *,
+        user_id: UserId,
     ) -> None:
         if challenge.status == ChallengeStatus.VIEWER_REJECTED:
             raise DomainError(
@@ -161,7 +190,10 @@ class ChallengeService:
             raise DomainError(
                 "Challenge can only be REJECTED by the Viewer for PENDING or ACCEPTED challenges"
             )
-        
+        if user_id != challenge.created_by:
+            raise DomainError(
+                "Challenge can only be REJECTED by the creator"
+            )
         now = datetime.now(timezone.utc)
         updated_at = UpdatedAt(now)
 
@@ -171,6 +203,8 @@ class ChallengeService:
     def streamer_complete_challenge(
         self,
         challenge: Challenge,
+        *,
+        streamer_id: StreamerId,
     ) -> None:
         if challenge.status == ChallengeStatus.STREAMER_COMPLETED:
             raise DomainError(
@@ -180,7 +214,10 @@ class ChallengeService:
             raise DomainError(
                 "Challenge can only be marked as COMPLETED by the Streamer for ACCEPTED challenges"
             )
-        
+        if streamer_id != challenge.assigned_to:
+            raise DomainError(
+                "Challenge can only be marked as COMPLETED by the assigned streamer"
+            )
         now = datetime.now(timezone.utc)
         
         current_duration = now - challenge.created_at.value
@@ -196,6 +233,8 @@ class ChallengeService:
     def viewer_confirm_challenge(
         self,
         challenge: Challenge,
+        *,
+        user_id: UserId,
     ) -> None:
         if challenge.status == ChallengeStatus.VIEWER_CONFIRMED:
             raise DomainError(
@@ -205,7 +244,10 @@ class ChallengeService:
             raise DomainError(
                 "Challenge can only be marked as CONFIRMED by the Viewer for ACCEPTED or STREAMER_COMPLETED challenges"
             )
-        
+        if user_id != challenge.created_by:
+            raise DomainError(
+                "Challenge can only be marked as CONFIRMED by the creator"
+            )
         now = datetime.now(timezone.utc)
         updated_at = UpdatedAt(now)
 

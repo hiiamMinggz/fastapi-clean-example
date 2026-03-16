@@ -48,7 +48,6 @@ class Challenge(Entity[ProductId]):
     def validate(self) -> None:
         self._amount_validation()
         self._time_validation()
-        self._creator_validation()
 
     def _amount_validation(self) -> None:
         if self.amount < self.streamer_fixed_amount:
@@ -60,12 +59,6 @@ class Challenge(Entity[ProductId]):
         if self.expires_at <= self.created_at:
             raise DomainError(
                 f"Challenge expires at must be greater than created at, but got {self.expires_at} and {self.created_at}.",
-            )
-    
-    def _creator_validation(self) -> None:
-        if self.created_by == self.assigned_to:
-            raise DomainError(
-                f"Challenge creator cannot be the same as assignee",
             )
     
     @property
