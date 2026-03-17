@@ -22,6 +22,7 @@ from app.application.common.ports.transaction_manager import (
 from app.application.common.ports.user_command_gateway import UserCommandGateway
 from app.application.common.ports.user_query_gateway import UserQueryGateway
 from app.application.common.services.current_user import CurrentUserService
+from app.application.queries.get_me import GetMeQueryService
 from app.application.queries.list_users import ListUsersQueryService
 from app.infrastructure.adapters.challenge_data_mapper_sqla import SqlaChallengeDataMapper
 from app.infrastructure.adapters.main_flusher_sqla import SqlaMainFlusher
@@ -111,4 +112,5 @@ class ApplicationProvider(Provider):
     # Queries
     query_services = provide_all(
         ListUsersQueryService,
+        GetMeQueryService,
     )

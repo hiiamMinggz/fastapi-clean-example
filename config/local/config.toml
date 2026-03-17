@@ -21,3 +21,13 @@ MAX_OVERFLOW = 10
 [logs]
 # Level can be set to "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"
 LEVEL = "DEBUG"
+
+# CORS
+[cors]
+ORIGINS = [
+    "http://localhost",
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "http://localhost:5173",
+    "https://dareus.scimta.com",
+]

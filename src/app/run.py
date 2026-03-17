@@ -20,7 +20,7 @@ def make_app(
     configure_logging(level=settings.logs.level)
 
     app: FastAPI = create_app()
-    configure_app(app=app, root_router=create_root_router())
+    configure_app(app=app, root_router=create_root_router(), settings=settings)
 
     async_ioc_container = create_async_ioc_container(
         providers=(*get_providers(), *di_providers),
