@@ -21,9 +21,9 @@ def create_users_router() -> APIRouter:
 
     sub_routers = (
         create_list_users_router(),
-        create_change_password_router(),
-        create_activate_user_router(),
-        create_deactivate_user_router(),
+        # create_change_password_router(),
+        # create_activate_user_router(),
+        # create_deactivate_user_router(),
         create_apply_as_streamer_router(),
     )
 

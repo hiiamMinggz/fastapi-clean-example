@@ -23,7 +23,7 @@ def update_challenge_router() -> APIRouter:
     router = ErrorAwareRouter()
 
     @router.patch(
-        "/{challenge_id}/update",
+        "/update",
         description=getdoc(UpdateChallengeInteractor),
         error_map={
             AuthenticationError: status.HTTP_401_UNAUTHORIZED,
