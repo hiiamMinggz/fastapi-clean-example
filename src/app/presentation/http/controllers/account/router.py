@@ -4,6 +4,7 @@ from app.presentation.http.controllers.account.log_in import create_log_in_route
 from app.presentation.http.controllers.account.log_out import (
     create_log_out_router,
 )
+from app.presentation.http.controllers.account.me import create_me_router
 from app.presentation.http.controllers.account.sign_up import (
     create_viewer_sign_up_router,
 )
@@ -19,6 +20,7 @@ def create_account_router() -> APIRouter:
         create_viewer_sign_up_router(),
         create_log_in_router(),
         create_log_out_router(),
+        create_me_router(),
     )
 
     for sub_router in sub_routers:
