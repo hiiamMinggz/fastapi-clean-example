@@ -50,6 +50,8 @@ class ExpiresAt(Time):
 
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
+        if self.value is None:
+            return
         super(ExpiresAt, self).__post_init__()
 
 @dataclass(frozen=True, slots=True, repr=False)
@@ -105,3 +107,23 @@ class DeliveredAt(Time):
     def __post_init__(self) -> None:
         """:raises DomainFieldError:"""
         super(DeliveredAt, self).__post_init__()
+
+@dataclass(frozen=True, slots=True, repr=False)
+class AcceptanceDeadline(Time):
+    """raises DomainFieldError"""
+
+    value: datetime
+
+    def __post_init__(self) -> None:
+        """:raises DomainFieldError:"""
+        super(AcceptanceDeadline, self).__post_init__()
+
+@dataclass(frozen=True, slots=True, repr=False)
+class ExecutionTime(Time):
+    """raises DomainFieldError"""
+
+    value: datetime
+
+    def __post_init__(self) -> None:
+        """:raises DomainFieldError:"""
+        super(ExecutionTime, self).__post_init__()

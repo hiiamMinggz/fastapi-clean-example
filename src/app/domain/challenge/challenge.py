@@ -1,7 +1,7 @@
 from datetime import timedelta
 from app.domain.base import Entity, DomainError
 from app.domain.shared.value_objects.id import ProductId
-from app.domain.shared.value_objects.time import CreatedAt, ExpiresAt, AcceptedAt
+from app.domain.shared.value_objects.time import AcceptanceDeadline, CreatedAt, ExecutionTime, ExpiresAt, AcceptedAt
 from app.domain.shared.value_objects.id import UserId, StreamerId
 from app.domain.challenge.value_objects import (
     Title,
@@ -27,7 +27,8 @@ class Challenge(Entity[ProductId]):
         streamer_fixed_amount: StreamerChallengeFixedAmount,
         status: ChallengeStatus,
         created_at: CreatedAt,
-        #TODO: add delta time 
+        acceptance_deadline: AcceptanceDeadline,
+        execution_time: ExecutionTime,
         expires_at: ExpiresAt,
         accepted_at: AcceptedAt,
     ) -> None:
@@ -41,6 +42,8 @@ class Challenge(Entity[ProductId]):
         self.streamer_fixed_amount = streamer_fixed_amount
         self.status = status
         self.created_at = created_at
+        self.acceptance_deadline = acceptance_deadline
+        self.execution_time = execution_time
         self.expires_at = expires_at
         self.accepted_at = accepted_at
         self.validate()
@@ -56,11 +59,11 @@ class Challenge(Entity[ProductId]):
             )
 
     def _time_validation(self) -> None:
-        if self.expires_at <= self.created_at:
+        if self.acceptance_deadline <= self.created_at:
             raise DomainError(
-                f"Challenge expires at must be greater than created at, but got {self.expires_at} and {self.created_at}.",
+                f"Challenge acceptance deadline must be greater than created at, but got {self.acceptance_deadline} and {self.created_at}.",
             )
     
     @property
     def duration(self) -> timedelta:
-        return self.expires_at.value - self.created_at.value
+        return self.expires_at.value - self.accepted_at.value

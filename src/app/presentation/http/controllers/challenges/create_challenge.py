@@ -49,7 +49,8 @@ def create_challenge_router() -> APIRouter:
             description=request_data.description,
             assigned_to=request_data.assigned_to,
             amount=request_data.amount,
-            expires_at=request_data.expires_at,
+            acceptance_deadline=request_data.acceptance_deadline,
+            execution_time=request_data.execution_time,
         )
         return await interactor.execute(request_data)
 

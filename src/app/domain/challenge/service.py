@@ -9,7 +9,7 @@ from app.domain.user.value_objects import StreamerChallengeFixedAmount
 from app.domain.shared.value_objects.id import ProductId, UserId, StreamerId
 from app.domain.challenge.challenge_status import ChallengeStatus
 from app.domain.shared.ports.id_generator import IdGenerator
-from app.domain.shared.value_objects.time import CreatedAt, ExpiresAt, AcceptedAt, UpdatedAt
+from app.domain.shared.value_objects.time import AcceptanceDeadline, CreatedAt, ExecutionTime, ExpiresAt, AcceptedAt, UpdatedAt
 from app.domain.shared.value_objects.fee import ChallengeFee
 from app.domain.base import DomainError
 
@@ -29,12 +29,12 @@ class ChallengeService:
             assigned_to: StreamerId,
             amount: ChallengeAmount,
             streamer_fixed_amount: StreamerChallengeFixedAmount,
-            expires_at: ExpiresAt,
+            accpetance_deadline: AcceptanceDeadline,
+            execution_time: ExecutionTime,
          ) -> Challenge:
         
         challenge_id = ProductId(self.challenge_id_generator())
         now = datetime.now(timezone.utc)
-
         challenge = Challenge(
             id_=challenge_id,
             title=title,
@@ -46,7 +46,9 @@ class ChallengeService:
             streamer_fixed_amount=streamer_fixed_amount,
             status=ChallengeStatus.PENDING,
             created_at=CreatedAt(now),
-            expires_at=expires_at,
+            acceptance_deadline=accpetance_deadline,
+            execution_time=execution_time,
+            expires_at=None,
             accepted_at=None,
         )
         return challenge

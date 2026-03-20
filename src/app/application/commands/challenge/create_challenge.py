@@ -34,7 +34,7 @@ from app.domain.challenge.value_objects import (
     ChallengeAmount,
 )
 from app.domain.shared.value_objects.id import StreamerId, UserId
-from app.domain.shared.value_objects.time import ExpiresAt
+from app.domain.shared.value_objects.time import AcceptanceDeadline, ExecutionTime, ExpiresAt
 from app.domain.wallet.wallet import Wallet
 
 log = logging.getLogger(__name__)
@@ -46,7 +46,8 @@ class CreateChallengeRequest:
     description: str
     assigned_to: UUID
     amount: Decimal
-    expires_at: datetime
+    acceptance_deadline: datetime
+    execution_time: datetime
 
 
 class CreateChallengeResponse(TypedDict):
@@ -130,7 +131,8 @@ class CreateChallengeInteractor:
             assigned_to=streamer_id,
             amount=challenge_amount,
             streamer_fixed_amount=streamer.min_amount_challenge,
-            expires_at=ExpiresAt(request_data.expires_at),
+            accpetance_deadline=AcceptanceDeadline(request_data.acceptance_deadline),
+            execution_time=ExecutionTime(request_data.execution_time),
         )
         #debit wallet
         self._wallet_service.debit(
